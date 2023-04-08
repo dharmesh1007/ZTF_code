@@ -1,0 +1,7 @@
+cacheLasairXmatch/
+lightcurves_alerts/
+lightcurves_dataset/
+.DS_Store
+__pycache__/
+*.pyc
+.ipynb_checkpoints/

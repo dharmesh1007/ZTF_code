@@ -1,0 +1,52 @@
+UGSS (U Geminorum)
+
+- outbursts as in ZTF18abdgqzr are close together with average duration of 10 days, some of these are well sampled, others are not. Therefore it is easy to mistake multiple poorly sampled outbursts as a single long outburst. Furthermore, the sampling from one outbursts to another is inconsistent, therefore, it may appear as though some outbursts are of higher amplitude than others.
+
+- On certain nights, ZTF18abmrusw contains multiple observations in a given band. The scatter in these measurements can be as much a 0.7 magnitudes forcing the observer to question whether the progression of the datapoints is real or just scatter, some may appear as outbursts, though it is difficult to ascertain if they are genuine. This object has very frequent outbursts, recurrence times of a few days only.
+
+- For frequently outbursting systems, the quiescent level is difficult to locate, most of the observations have been acquired during outburst.
+
+- ZTF18abobptn is an instance of a source where the Lasair and Alerce light curves for apparent magnitude differ. In Lasair, the light curve appears to be that of an SU Uma, while in Alerce it just appears as a U Gem. Same with ZTF18abmfybu for a particular datapoint.
+
+- question: should I include sources that have only been observed for a short timespan. If they are sampled well enough to make out a feature (say outburst) then yes. Distinguishing these occurrences from similar ones displayed by other types may come down to colour or maximum brightness.
+
+- Sources like ZTF18aceysta can make it difficult to distinguish between dwarf nova displaying subclasses, though again colour may play its part as metadata.
+
+- Poorly sampled outbursts may appear as constant brightness, see ZTF19aagzlnb.
+
+- ZTF18abyxsqb could be an example of a source displaying a slow rising dwarf nova outburst (a long outburst) possible confused with superoutbursts.
+
+- ZTF18adkpgdq appears to display just the rise of several outbursts.
+
+ - ZTF18aayhtdm looks more like a nova-like, no clear outbursts. Lasair light curve shows a couple of possible outbursts but these are not displayed in the Alerce light curves. EY Cygni was first detected with ROSAT X-ray obser- vatory in the energy range of 0.4–2.2 keV (Orio and Ogel- man, 1992). It is a U Gem type star with an orbital pe- riod of 11.0237976 h derived from absorption line analysis where the ephemeris was 𝑇0 = 2449255.3260(9) (Echevar- ría et al., 2007). The physical parameters of the system are summarized in the Table 1. The visual magnitudes of the system during quiescence and outburst are ∼14.8 and ∼11, respectively (Echevarría et al., 2007). The analysis of long term AAVSO light curves revealed that the recurrence time of the outbursts in the system is about 2000 days (Tovmas- sian et al., 2002) which is 8 times longer than the previously measured cycle by Piening (1978).
+
+- ZTF18aazvhdb is an example of a U Gem system displaying rapid fire outbursts characteristic of a high mass transfer rate, long period system such as Z Cam, the possible confusion between these classes would be expected.
+
+- ZTF18aasncio is a source that undergoes what appears to be a change in mass transfer rate
+
+- Lasair apparent and difference magnitudes are different to Alerce for ZTF18abtjfvs.
+
+- I am unsure of  V1449 Cyg aka ZTF18aawvssu, looks very stochastic so I'll leave this one out.
+
+- ZTF18aakapxk, here sometimes just the peak and quiescence are sampled.
+
+- ZTF18acyuqzg is a very bright source 14th mag undergoing several outbursts, the ASASYN light curve is clear, ZTF one is a little confusing.
+
+- ZTF18aanvvqw reclassified as a Z Cam based on occurrences of obvious standstills.
+
+- ZTF18aalapyu, will not be included even though it seems to be clear in https://sites.google.com/view/mgab-astronomy/mgab-v351-v400. I need to investigate why.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
