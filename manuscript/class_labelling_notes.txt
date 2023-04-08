@@ -37,6 +37,26 @@ UGSS (U Geminorum)
 - ZTF18aalapyu, will not be included even though it seems to be clear in https://sites.google.com/view/mgab-astronomy/mgab-v351-v400. I need to investigate why.
 
 
+UGWZ (WZ Sge)
+
+- Many light curves with one well sample long outburst.
+- several with high amplitude which is a good indicator, though others do not display this.
+- outbursts on a fading tail of a long outburst
+- ZTF18aajpbxv is a blue object, these systems are very short period, so including this even though no outburst present, there are also lots of data points.
+
+UGER (ER UMa)
+
+- frequently outbursting systems and are redder than the WZ Sge, see ZTF18aawzsdg
+- these should be superoutbursting though difficult to spot
+- ZTF17aadkfiq show outbursts very poorly sampled though frequent, can be confusing
+- ZTF18aaynvde is interesting, faint source with outbursts just about identifiable, red source.
+- ZTF18aazetql faint but shows outbursts only in g band.
+
+
+
+
+
+
 
 
 
