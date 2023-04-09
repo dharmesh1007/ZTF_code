@@ -273,7 +273,8 @@ def lasair_clean(dataframe, limit=None, dropnull=True, dropdup=True, prob=None, 
 
 
 # Display light curve
-def display_lightcurve(lc_df, x, y, errorCol=None):     
+def display_lightcurve(lc_df, x, y, errorCol=None, autorange='reversed'):     
+    # autorange = 'reversed' or True
 
     df = lc_df.copy()
 
@@ -286,7 +287,7 @@ def display_lightcurve(lc_df, x, y, errorCol=None):
                 "fid": "Filter"})
     
     fig.update_layout(
-        yaxis = dict(autorange="reversed"),
+        yaxis = dict(autorange=autorange),
         margin=dict(l=20, r=20, t=20, b=20),
         xaxis_tickformat='float',
         font=dict(
