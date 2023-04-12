@@ -52,6 +52,32 @@ UGER (ER UMa)
 - ZTF18aaynvde is interesting, faint source with outbursts just about identifiable, red source.
 - ZTF18aazetql faint but shows outbursts only in g band.
 
+UGSS (U Gem)
+- rapidly outbursting and not so rapidly outbursting system examples are ZTF18aazvhdb and ZTF18abcnbki
+- These systems seem to be fairly red
+- Not sure what is going on with ZTF18abcoxou, can just about make out outbursts, but very poorly sampled outbursts and well sampled quiescence.
+- ZTF18aasncio is an incredibly interesting system, undergoing a mass transfer rate change during the last 400 days of the light curve, and displaying what appear to be eclipses. The outbursts themselves don't appear to be of uniform amplitude, though their durations are approximately the same.
+- ZTF18abmszln does not appear to be so well sampled, though you can make out the outbursts.
+- ZTF18aawvssu looks very stochastic, will remove.
+- ZTF18aayotjv and ZTF18aawbmgc display standstills, these have been relabelled as Z_Cam
+- Complete
+
+AM CVn
+- Complete
+
+Nova-like / nova-like VY Scl
+- ZTF18abmnwwz seems like a regular NL but displays an unusual drop and recovery in brightness of amplitude 0.4 mags.
+
+- ZTF18acxhody seems like an outbursting system
+- not done yet
+
+
+
+
+
+
+
+
 
 
 

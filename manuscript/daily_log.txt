@@ -14,5 +14,8 @@ Personal access token for git: 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
 UGSS (U Gem) labels have been done.
 Changed the apparent magnitude conversion to that of Alerce for Lasair light curves, yes!!! The details can be found via the pipeline link of Alerce.
 
+12th April 2023:
+Done some nova-like labelling.
+
 
 
