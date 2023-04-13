@@ -17,5 +17,13 @@ Changed the apparent magnitude conversion to that of Alerce for Lasair light cur
 12th April 2023:
 Done some nova-like labelling.
 
+13th April 2023:
+
+Completed nova-like and VY Scl labelling
+
+Added a few subclasses from the U_Gem (could be any dwarf nova subtype) list.
+
+Need to focus on magnetic CVs and novae now.
+
 
 

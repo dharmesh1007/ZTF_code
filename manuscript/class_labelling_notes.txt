@@ -65,11 +65,61 @@ UGSS (U Gem)
 AM CVn
 - Complete
 
-Nova-like / nova-like VY Scl
+Nova-like:
 - ZTF18abmnwwz seems like a regular NL but displays an unusual drop and recovery in brightness of amplitude 0.4 mags.
 
 - ZTF18acxhody seems like an outbursting system
-- not done yet
+
+- Decided to treat obvious eclipses as a separate class identifiable through obvious eclipse label.
+
+- regular nova-likes or nova remnants will be almost constant in brightness, no light curve variations above 1 magnitude, all others will be considered VY Scl.
+
+- ZTF18aaadsvx is an obvious eclipser, but the light curve displays almost constant brightness, with modulations (long terms) of < 0.4 mags, while ZTF17aaawwxl shows a constant brightness, then in the latter half of the light curve, displays a shift to a lower state of brightness that is only 0.2 mags fainter - still regarding as a nova-like regular.
+
+- ZTF18abmnwwz has some well sampled regions showing clear changes in brightness, though less than 0.5 magnitudes.
+
+- ZTF18acxhody looks like it is outbursting, labelled as unclear.
+
+- ZTF18abctcom looks like a borderline VY Scl according to our criteria, also looks like there are a couple of short amplitude outbursts in there too.
+
+- Abrupt drops may be construed as outburst one they get back to high state, rise and decline times will be a factor here.
+
+- ZTF18aabhuyb, ZTF18aaacgnn, ZTF18aceihyy, ZTF17aaawguy could be eclipsing nova-likes
+
+- ZTF18abblvfk seems to undergo a low state where outbursts then occur, cool.
+
+- ZTF18abskcci is a really interesting object, displaying 4 brightening events, the first and second last 80, with the former of a higher amplitude (0.6 mags), the next two have successively shorter durations and have smaller amplitudes. After each brightening event there is a dip in the brightness below the almost constant brightness that links them. The time between the first and second brightening is longest ~500 days, while the time between the second and third is shortest at ~150-200 days. I will leave it as a nova-like. ZTF18acewquy is another example.
+
+- Poorly sampled nova-likes can pose an issue to distinguish between outbursting systems, e.g., ZTF18adbcyjj, ZTF19acbvswp
+
+ - ZTF18absaltc eclipsing VY Scl
+
+VY Scl:
+
+ - ZTF19acarstz does not display VY Scl-iness
+
+- ZTF18acawffe objects like that make classification difficult
+
+- ZTF19aalcqff eclipsing nova-like?
+
+- ZTF18aabtynl outbursting nova-like?
+
+- ZTF21abjyptp nova-like that is kind of on the cusp of being a Z Cam
+
+- completed VY Scl labelling
+
+U_Gem (could be any dwarf nova type)
+
+- just playing
+
+- should focus on novae and magnetic CVs.
+
+
+
+
+
+
+
 
 
 
