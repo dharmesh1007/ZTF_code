@@ -114,6 +114,78 @@ U_Gem (could be any dwarf nova type)
 
 - should focus on novae and magnetic CVs.
 
+Novae:
+
+- ZTF23aaaairl is recently discovered though may be confused for a dwarf novae due to the short duration of the light curve and relatively faint. This is actually an extragalactic nova.
+
+- ZTF20abmisft is a highly reddened nova in the Galactic plane (HRGPN), very bright and cuspy, taken over a short period of time (see https://arxiv.org/pdf/2101.04045.pdf)
+
+- ZTF19aaontsz HRGPN (https://ui.adsabs.harvard.edu/abs/2021ATel14657....1D/abstract)
+
+- ZTF22abazrjk HRGPN: https://ui.adsabs.harvard.edu/abs/2022ATel15587....1D/abstract
+
+- ZTF19aaocgtd is a nova caught after the event during a slow decline (https://academic.oup.com/mnras/article/462/2/2074/2589960)
+
+- ZTF20abdpwst HRGPN https://ui.adsabs.harvard.edu/abs/2020ATel13790....1D/abstract
+
+- HRGPN are very bright, around 14th magnitude in the r band. Correction, reddening can be very high, leading to much fainter magnitudes.
+
+- ZTF21acdinya HRGPN https://www.astronomerstelegram.org/?read=14950
+
+- ZTF22aahisfz HRGPN https://www.astronomerstelegram.org/?read=15348
+
+- ZTF18abfxhxh is a nova remnant, erupted in 1987
+
+- ZTF21abmbzax nova with a dust dip
+
+- ZTF21aazewco si a faint galactic plane object that does not have r-band data and is only taken over a period of 40 days. Its decline is only 0.5 mags, but considering this is over 40 days it may be significant. It has not been observed since June 2021, so it has continued to fade. May just include this.
+
+- ZTF18aaadsqs eclipsing nova-remnant
+
+- ZTF18aagrgoe looks like eclipsing nova-remnant but is not classed as such, requires observation maybe, very bright.
+
+- ZTF18abndlhv is V392 Per, caught near the end of its outburst with most data during the remnant phase. Is classified along with the UG label but don't see much of that characteristic.
+
+- ZTF18abarjzi is a 2014 nova in decline from eruption, slow nova
+
+- ZTF17aaagsmw this will go down as a nova remnant even though there is a very shallow decline from its 2011-2012 eruption.
+
+- ZTF18abneynj slow nova on decline, slow decline
+
+- ZTF19abewkqw erupted in 2007 and still seems to be on decline, very slowly.
+
+- ZTF20abazbgv eruption in 2014 and still declining though very slowly.
+
+- ZTF19abcxpke is a symbiotic nova that seems to now be in quiescence, with large almost sinusoidal variations from a Mira type donor star.
+
+- decided to split nova into remnants, nova and nova_decline
+
+- ZTF19aapzxlt erupted in 2022 (U Sco), it is a very fast recurrent nova, can be confused for dwarf nova.
+
+- ZTF19abirmkt recent nova, just about visible, has cuspiness, ZTF19acbzgog is similar
+
+- all nova now classified.
+
+- really no point doing this unless you involve data from other surveys.
+
+
+AM Her:
+
+- Can easily be confused with VY Scl due to changes in the rate of mass transfer that are rather abrupt, weeks, months, years. E.g., ZTF18abryuah, ZTF17aaaehby, and ZTF18absgnqy.
+
+- However, they seems to have a larger scatter possibly due to the occultation of the accretion stream behind the limb of the white dwarf, and reprocessed X-ray and extreme UV photons from the accretion column disappearing behind the limb of the white dwarf. Also occultation of the accretion stream by the donor.
+
+- They switch between high and low states.
+
+- ZTF18aagqeuv seems to show long outbursts of 5 mags, leave this one out as an AM Her
+
+- ZTF18aajqtnw looks like it is eclipsing but it could just be the self eclipsing of the accretion spot.
+
+- some of these seems to be very red, as in the above.
+
+- eclipsing (self-eclipsing) ZTF17aabtvrf
+
+- ZTF18aaadlpa aka FR Lyn looks like a dwarf nova, relabel.
 
 
 

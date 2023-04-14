@@ -25,5 +25,11 @@ Added a few subclasses from the U_Gem (could be any dwarf nova subtype) list.
 
 Need to focus on magnetic CVs and novae now.
 
+14th April 2023:
+
+- Labelled novae and AM Hers.
+
+- DQ Hers now
+
 
 
