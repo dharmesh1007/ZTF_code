@@ -31,5 +31,9 @@ Need to focus on magnetic CVs and novae now.
 
 - DQ Hers now
 
+15th April 2023:
+
+- Completed all labelling apart from CV, CV+E, UG, and UG+E.
+- Should consider looking through the eclipsers and guessing or training a classifier on the existing classified sources and classifier the remainder.
 
 

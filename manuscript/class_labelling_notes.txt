@@ -188,6 +188,23 @@ AM Her:
 - ZTF18aaadlpa aka FR Lyn looks like a dwarf nova, relabel.
 
 
+DQ Her:
+
+- How do you distingusish between light curve dips from eclipse and those where a part of the system is self-eclipsing. In self eclipsing system this could be due to the WD spin period. If it's only a few tenths of the magnitude, could be either.
+
+- DQ Her that just looks like an intermediate polar, high cadence photometry would reveal spin, orbit and beat frequencies.
+
+- ZTF17aaajnpg looks outbursty but looks very scattered.
+
+- ZTF17aabglmw, ZTF18abnzukj DQ Her + U Gem
+
+- Done
+
+__________________________________
+
+May now wish to train a classifier and then classify the remaining sources.
+
+
 
 
 
