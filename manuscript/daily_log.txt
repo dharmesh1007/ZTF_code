@@ -36,4 +36,12 @@ Need to focus on magnetic CVs and novae now.
 - Completed all labelling apart from CV, CV+E, UG, and UG+E.
 - Should consider looking through the eclipsers and guessing or training a classifier on the existing classified sources and classifier the remainder.
 
+22nd April 2023:
+
+- Placed standstill and peak calculators into functions and then into the feature extractor module, which has now been generated in this git tracked folder.
+
+- The module is now in the form of a class.
+
+- Need to formulate a colour feature and the get the period finder ratio thing.
+
 

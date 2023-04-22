@@ -1,0 +1,7 @@
+Feature testing notes
+
+Standstill finder:
+-Clear standstills around 25 and above for ratio of max/min std, though frequently eclipsing nova-likes; frequently sampled quiescent stages in U Gem and SU Uma light curve; light curves with just one well sampled outburst; and some VY Scl types tend to have high values of this too.
+- The above issues may be handled when combined with the standstill level which described how bright the standstill is.
+- Another way of handling confusion is the light curve periodicity along with its power ratio.
+
