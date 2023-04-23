@@ -44,4 +44,10 @@ Need to focus on magnetic CVs and novae now.
 
 - Need to formulate a colour feature and the get the period finder ratio thing.
 
+23rd April 2023:
+
+- Completed the construction of light curve based features and placed them into the module.
+- The module works fine now.
+- Next step would be to incorporate metadata based features.
+
 

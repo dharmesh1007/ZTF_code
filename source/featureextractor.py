@@ -4,13 +4,14 @@ import feets
 from astropy.timeseries import LombScargle
 from scipy.signal import find_peaks
 from scipy.stats import linregress
+import time
 
 class FeatureExtractor:
     def __init__(self, lc):
         self.lc = lc
 
     # Functon for aligning time and magnitude for each band.
-    def align(time, time2, magnitude, magnitude2, error, error2):
+    def align(self, time, time2, magnitude, magnitude2, error, error2):
         """Synchronizes the light-curves in the two different bands.
         Returns
         -------
@@ -54,17 +55,15 @@ class FeatureExtractor:
         return new_time, new_mag, new_mag2, new_error, new_error2
 
     # Number of data points above or below delta mags or standard deviations of a rolling median or mean.
-
-
     def deviations_from_RollAv(self, magCol, win_size, delta=1, rollType='median', deviation_type='mag'):
-        
+        magCol = magCol.reset_index(drop=True)
         # variable for number of instances where condition is met.
         instances = 0
 
         if rollType == 'median':
             # Threshold value to find value equal to or above. Index of median calculation is set by center.
             rollMed = magCol.rolling(win_size, center=True).median()
-            # print(rollMed)
+            # print(rollMed.max())
             if deviation_type == 'mag':
                 threshold = rollMed + delta
                 # print(threshold)
@@ -128,7 +127,7 @@ class FeatureExtractor:
 
     # Number of data points above or below delta mags or stds of the median or mean of the column.
     def deviations_from_average(self, magCol, avType='median', deviation_type='mag', delta=1):
-        
+        magCol = magCol.reset_index(drop=True)
         instances = 0
 
         if avType == 'median':
@@ -171,13 +170,13 @@ class FeatureExtractor:
             return np.nan
 
     # Median absolute deviation function.
-    def mad(array):
+    def mad(self, array):
         a = np.abs(array-np.median(array))
         b = np.median(a)
         return b
 
     # Method for finding standstills in Z_Cam light curves
-    def standstill_finder(lc, pnt_threshold=20, window_size=10):
+    def standstill_finder(self, lc, pnt_threshold=20, window_size=10):
         # Reverse light curve
         lc_rev = lc.copy()
         # subtract median magnitude from each filter and multiply by -1 to flip the light curve
@@ -203,18 +202,19 @@ class FeatureExtractor:
             min_roll_std_mean = roll_mean[min_roll_std]
             # fraction of the maximum light curve amplitude that min_roll_std_mean is, i.e., location relative to the maximum of the standstill.
             standstill_level = (min_roll_std_mean-lc_min)/(lc_max-lc_min)
-
+            # Ratio of max and min of rolling std
+            rollstd_maxminratio = roll_std.max()/roll_std.min()
             # print(f'Rolling std max: {roll_std.max()}',
             #     f'\nRolling std min: {roll_std.min()}',
             #     f'\nRatio of max and min of rolling std: {roll_std.max()/roll_std.min()}',
             #     f'\nMean brightness of window with minimum rolling std: {min_roll_std_mean}'
             #     f'\nStandstill level: {standstill_level}')
             
-            return roll_std.max(), roll_std.min(), roll_std.max()/roll_std.min(), min_roll_std_mean, standstill_level
+            return rollstd_maxminratio, standstill_level
         else:
-            return np.nan, np.nan, np.nan, np.nan, np.nan
+            return np.nan, np.nan
 
-    def peak_definer(lc, height=None, threshold=None, distance=None, prominence=(2,5), 
+    def peak_finder(self, lc, height=None, threshold=None, distance=None, prominence=(2,5), 
                         width=None, wlen=None, rel_height=0.5, plateau_size=None):
         
         # Reverse light curve
@@ -279,7 +279,52 @@ class FeatureExtractor:
 
         return n_peaks, rise_rate, decline_rate, max_prominence
 
-    
+    def clr(self, lc):
+
+        df = lc.copy()
+        # Dates as integers
+        df['jd'] = df['jd'].astype(int)
+        # Split into different filters
+        df_g = df[df['fid']==1]
+        df_r = df[df['fid']==2]
+
+        # Drop duplicated dates from each band
+        df_g = df_g.drop_duplicates(subset=['jd'], keep='first')
+        df_r = df_r.drop_duplicates(subset=['jd'], keep='first')
+
+        # Identify dates that are in both bands
+        df_g['in_both'] = df_g['jd'].isin(df_r['jd'])
+        df_r['in_both'] = df_r['jd'].isin(df_g['jd'])
+
+        # Drop dates that are not in both bands
+        df_g_inboth = df_g[df_g['in_both']==True].reset_index(drop=True)
+        df_r_inboth = df_r[df_r['in_both']==True].reset_index(drop=True)
+
+        # If sufficient data points in both bands, calculate the colour
+        if (len(df_g_inboth)>0) & (len(df_r_inboth)>0):
+            # Calculate the difference between the two bands
+            clr_per_epoch = df_g_inboth['dc_mag'] - df_r_inboth['dc_mag']
+            
+            # Calculate the mean difference
+            clr_mean = clr_per_epoch.mean()
+            clr_median = clr_per_epoch.median()
+            clr_std = clr_per_epoch.std()
+            clr_bright = df_g_inboth['dc_mag'].min() - df_r_inboth['dc_mag'].min()
+            clr_faint = df_g_inboth['dc_mag'].max() - df_r_inboth['dc_mag'].max()
+
+            # print(f'CLR mean: {clr_mean}\nCLR median: {clr_median}\nCLR std: {clr_std}')
+        
+        else:
+            clr_mean = df_g['dc_mag'].mean() - df_r['dc_mag'].mean()
+            clr_median = df_g['dc_mag'].median() - df_r['dc_mag'].median()
+            clr_std = np.nan
+            clr_bright = df_g['dc_mag'].min() - df_r['dc_mag'].min()
+            clr_faint = df_g['dc_mag'].max() - df_r['dc_mag'].max()
+
+            # print(f'CLR mean: {clr_mean}\nCLR median: {clr_median}\nCLR std: {clr_std}')
+
+        return clr_mean, clr_median, clr_std, clr_bright, clr_faint
+
 
     # Function to calculate features from feets package.
     def extract_feets(self, timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid'):
@@ -288,7 +333,7 @@ class FeatureExtractor:
         single_feets_features = feets.FeatureSpace(data=['magnitude', 'time', 'error']).features_as_array_
         multi_feets_features = feets.FeatureSpace(data=['aligned_time', 'aligned_magnitude', 'aligned_magnitude2', 
                                                         'aligned_error', 'aligned_error2']).features_as_array_
-            
+        
         # Features to remove from fs.extract due to insufficient data.
         feat_remove = {'1':['Autocor_length', 'Beyond1Std', 'Con', 'FluxPercentileRatioMid20', 'FluxPercentileRatioMid35', 
                             'FluxPercentileRatioMid50', 'FluxPercentileRatioMid65', 'FluxPercentileRatioMid80', 
@@ -320,7 +365,7 @@ class FeatureExtractor:
                         '4to19':['FluxPercentileRatioMid20', 'FluxPercentileRatioMid35', 'FluxPercentileRatioMid50', 
                                 'FluxPercentileRatioMid65', 'FluxPercentileRatioMid80', 'PercentDifferenceFluxPercentile'],
                         }
-        
+
         # Some pre-processing
         dfg = df[df[fieldCol]==1].copy()
         dfr = df[df[fieldCol]==2].copy()
@@ -366,7 +411,7 @@ class FeatureExtractor:
                 # Add in the dropped features as columns with NaN values.
                 for f in feat_remove['1']:
                     df_feets_single[f+f'_{filter}'] = np.nan
-
+            
             elif df.shape[0]==2:
                 # Extract features for dfg
                 single_feets_features_revised = np.delete(single_feets_features, np.where(np.isin(single_feets_features, feat_remove['2'])))
@@ -420,22 +465,20 @@ class FeatureExtractor:
                                             magnitude=df[magCol], 
                                             error=df[errCol]
                                             )
-                
+
                 df_feets_single = pd.DataFrame([values], columns=features)
                 # Add '_g' to the column names.
                 df_feets_single.columns = [col+f'_{filter}' for col in df_feets_single.columns]
-            
 
             return df_feets_single
         
         # Extract single-band features
-        df_feets_g = extract(df, 'g')
-        df_feets_r = extract(df, 'r')
+        df_feets_g = extract(dfg, 'g')
+        df_feets_r = extract(dfr, 'r')
         
         # Extract multi-band features
-
         fs_multi = feets.FeatureSpace(only=list(multi_feets_features))
-
+        
         try:
             features_multi, values_multi = fs_multi.extract(aligned_magnitude=amag,
                                                 aligned_magnitude2=amag2,
@@ -454,8 +497,8 @@ class FeatureExtractor:
 
 
     # Extract custom features
-    def extract_custom(self, df, timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid'):
-            
+    def extract_custom(self, timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid'):
+        df = self.lc.copy()
         # Some pre-processing
         dfg = df[df[fieldCol]==1].copy()
         dfr = df[df[fieldCol]==2].copy()
@@ -492,12 +535,46 @@ class FeatureExtractor:
                 df_cust[f'pwr_max_{filter}'] = [power.max()]
                 df_cust[f'freq_pwr_max_{filter}'] = [frequency[np.where(power==power.max())][0]]
                 df_cust[f'FalseAlarm_prob_{filter}'] = [ls.false_alarm_probability(power.max())]
+                df_cust[f'pwr_maxovermean_{filter}'] = [df_cust[f'pwr_max_{filter}']/power.mean()]
             else:
                 df_cust[f'pwr_max_{filter}'] = [np.nan]
                 df_cust[f'freq_pwr_max_{filter}'] = [np.nan]
                 df_cust[f'FalseAlarm_prob_{filter}'] = [np.nan]
+                df_cust[f'pwr_maxovermean_{filter}'] = [np.nan]
 
+            # Peak finder features
+            df_cust[f'npeaks_pt5to1_{filter}'] = [self.peak_finder(df, prominence=(0.5, 1))[0]]
+            df_cust[f'rrate_pt5to1_{filter}'] = [self.peak_finder(df, prominence=(0.5, 1))[1]]
+            df_cust[f'drate_pt5to1_{filter}'] = [self.peak_finder(df, prominence=(0.5, 1))[2]]
+            df_cust[f'amp_pt5to1_{filter}'] = [self.peak_finder(df, prominence=(0.5, 1))[3]]
 
+            df_cust[f'npeaks_1to2_{filter}'] = [self.peak_finder(df, prominence=(1, 2))[0]]
+            df_cust[f'rrate_1to2_{filter}'] = [self.peak_finder(df, prominence=(1, 2))[1]]
+            df_cust[f'drate_1to2_{filter}'] = [self.peak_finder(df, prominence=(1, 2))[2]]
+            df_cust[f'amp_1to2_{filter}'] = [self.peak_finder(df, prominence=(1, 2))[3]]
+
+            df_cust[f'npeaks_1to2_{filter}'] = [self.peak_finder(df, prominence=(1, 2))[0]]
+            df_cust[f'rrate_1to2_{filter}'] = [self.peak_finder(df, prominence=(1, 2))[1]]
+            df_cust[f'drate_1to2_{filter}'] = [self.peak_finder(df, prominence=(1, 2))[2]]
+            df_cust[f'amp_1to2_{filter}'] = [self.peak_finder(df, prominence=(1, 2))[3]]
+
+            df_cust[f'npeaks_2to5_{filter}'] = [self.peak_finder(df, prominence=(2, 5))[0]]
+            df_cust[f'rrate_2to5_{filter}'] = [self.peak_finder(df, prominence=(2, 5))[1]]
+            df_cust[f'drate_2to5_{filter}'] = [self.peak_finder(df, prominence=(2, 5))[2]]
+            df_cust[f'amp_2to5_{filter}'] = [self.peak_finder(df, prominence=(2, 5))[3]]
+
+            df_cust[f'npeaks_above5_{filter}'] = [self.peak_finder(df, prominence=(5, None))[0]]
+            df_cust[f'rrate_above5_{filter}'] = [self.peak_finder(df, prominence=(5, None))[1]]
+            df_cust[f'drate_above5_{filter}'] = [self.peak_finder(df, prominence=(5, None))[2]]
+            df_cust[f'amp_above5_{filter}'] = [self.peak_finder(df, prominence=(5, None))[3]]
+
+            # Standstill finder features
+            df_cust[f'rollstd_ratio_t20s10_{filter}'] = [self.standstill_finder(df, pnt_threshold=20, window_size=10)[0]]
+            df_cust[f'stdstilllev_t20s10{filter}'] = [self.standstill_finder(df, pnt_threshold=20, window_size=10)[1]]
+            df_cust[f'rollstd_ratio_t10s5_{filter}'] = [self.standstill_finder(df, pnt_threshold=10, window_size=5)[0]]
+            df_cust[f'stdstilllev_t10s5{filter}'] = [self.standstill_finder(df, pnt_threshold=10, window_size=5)[1]]
+
+            
             # Extract number of points brighter than x magnitudes brighter than the rolling median of window size y.
             win_size = [20]
             delta = [-1,-2,-5]
@@ -510,7 +587,8 @@ class FeatureExtractor:
                             rollType='median',
                             deviation_type='mag'
                             )]
-
+                
+            
             # Extract number of points fainter than x magnitudes fainter than the rolling median of window size y.
             win_size = [20]
             delta = [1,2,3]
@@ -523,7 +601,8 @@ class FeatureExtractor:
                             rollType='median',
                             deviation_type='mag'
                             )]
-
+            
+            
             # Extract number of points brighter than x magnitudes brigher than median.
             delta = [-1,-2,-5]
             for d in delta:
@@ -534,6 +613,7 @@ class FeatureExtractor:
                         deviation_type='mag',
                         delta=d
                         )]
+                
 
             # Extract number of points fainter than x magnitudes fainter than median.
             delta = [1,2,3]
@@ -546,18 +626,20 @@ class FeatureExtractor:
                         delta=d
                         )]
             
+            
             return df_cust
                 
         
         df_cust_g = extract(dfg, 'g')
         df_cust_r = extract(dfr, 'r')
         df_custom = pd.concat([df_cust_g, df_cust_r], axis=1)
-        
-        # Extract colour
-        df_custom['clr_median'] = df_custom['median_g'] - df_custom['median_r']
-        df_custom['clr_mean'] = df_custom['mean_g'] - df_custom['mean_r']
-        df_custom['clr_minmag'] = df_custom['min_mag_g'] - df_custom['min_mag_r']
-        df_custom['clr_maxmag'] = df_custom['max_mag_g'] - df_custom['max_mag_r']
+
+        # Colour extractor
+        df_custom['clr_mean'] = [self.clr(df)[0]]
+        df_custom['clr_median'] = [self.clr(df)[1]]
+        df_custom['clr_std'] = [self.clr(df)[2]]
+        df_custom['clr_bright'] = [self.clr(df)[3]]
+        df_custom['clr_faint'] = [self.clr(df)[4]]
 
         df_custom.drop(['mean_g', 'mean_r', 'std_g', 'std_r', 'MAD_g', 'MAD_r'], axis=1, inplace=True)
 

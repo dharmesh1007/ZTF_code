@@ -5,3 +5,14 @@ Standstill finder:
 - The above issues may be handled when combined with the standstill level which described how bright the standstill is.
 - Another way of handling confusion is the light curve periodicity along with its power ratio.
 
+G-r colour epochal features:
+- introduced the standard deviation of the epochal colour as well as the mean and median.
+- if there is not enough information for epochal colour we just used the average of the whole light curve, not just the matched epochs
+- included the colour at brightest and faintest epoch.
+- for insufficient epoch cases, we relaxed the same epoch constraint.
+
+Period fitting:
+- used the ratio of max to mean power to identify significant signals.
+
+Now require metadata based features.
+
