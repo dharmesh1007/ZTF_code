@@ -513,8 +513,8 @@ class FeatureExtractor:
             df_cust = pd.DataFrame()
             df_cust[f'mean_{filter}'] = [df[magCol].mean()] # Can omit on return
             df_cust[f'median_{filter}'] = [df[magCol].median()] 
-            df_cust[f'std_{filter}'] = [df[magCol].std()] # Can omit on return
-            df_cust[f'MAD_{filter}'] = [self.mad(df[magCol])] # Can omit on return
+            # df_cust[f'std_{filter}'] = [df[magCol].std()] # Can omit on return
+            # df_cust[f'MAD_{filter}'] = [self.mad(df[magCol])] # Can omit on return
             df_cust[f'min_mag_{filter}'] = [df[magCol].min()]
             df_cust[f'max_mag_{filter}'] = [df[magCol].max()]
             df_cust[f'n_obs_{filter}'] = [df[magCol].count()]
@@ -641,7 +641,7 @@ class FeatureExtractor:
         df_custom['clr_bright'] = [self.clr(df)[3]]
         df_custom['clr_faint'] = [self.clr(df)[4]]
 
-        df_custom.drop(['mean_g', 'mean_r', 'std_g', 'std_r', 'MAD_g', 'MAD_r'], axis=1, inplace=True)
+        # df_custom.drop(['mean_g', 'mean_r', 'std_g', 'std_r', 'MAD_g', 'MAD_r'], axis=1, inplace=True)
 
         return df_custom
 
