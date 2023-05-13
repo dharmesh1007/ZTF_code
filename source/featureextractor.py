@@ -122,7 +122,7 @@ class FeatureExtractor:
                     if (magCol[mag] <=  threshold[len(magCol)-1-indFirst]):
                         instances+=1 # log instances where  thresholds are met for each epoch
         
-        return instances/len(magCol) if len(magCol)>win_size else np.nan
+        return instances if len(magCol)>win_size else np.nan
 
 
     # Number of data points above or below delta mags or stds of the median or mean of the column.
@@ -165,7 +165,7 @@ class FeatureExtractor:
                             instances+=1
 
         if len(magCol)>0:
-            return instances/len(magCol)
+            return instances
         else:
             return np.nan
 
@@ -249,20 +249,20 @@ class FeatureExtractor:
                 linreg = linregress(lc['jd'], lc['dc_mag'])
                 if (linreg.pvalue < 0.05) & (linreg.slope < 0):
                     n_peaks = 0
-                    rise_rate = np.nan
+                    rise_rate = 0
                     decline_rate = linreg.slope*(-1)
-                    max_prominence = np.nan
+                    max_prominence = 0
                 else:
                     n_peaks = 0
-                    rise_rate = np.nan
-                    decline_rate = np.nan
-                    max_prominence = np.nan
+                    rise_rate = 0
+                    decline_rate = 0
+                    max_prominence = 0
                 
             except:
                 n_peaks = 0
-                rise_rate = np.nan
-                decline_rate = np.nan
-                max_prominence = np.nan
+                rise_rate = 0
+                decline_rate = 0
+                max_prominence = 0
 
 
         # print(f'Number of peaks: {n_peaks}',
@@ -325,9 +325,61 @@ class FeatureExtractor:
 
         return clr_mean, clr_median, clr_std, clr_bright, clr_faint
 
+    # Missing data imputation function
+    def impute_column(self, dataframe, col_orig, col_replace, reversed=True):
+        df = dataframe.copy()
+        for col1, col2 in zip(col_orig, col_replace):
+            # If value in col_orig is missing, replace with value in col_replace if not missing, else replace with nan
+            df[col1] = np.where(df[col1].isnull(), df[col2], df[col1])
+            if reversed == True:
+                # Do the same the other way around
+                df[col2] = np.where(df[col2].isnull(), df[col1], df[col2])
+        return df
+    
+    def outlier_thresholds_normal(self, dataframe, cols, z_threshold=3):
+        df = dataframe.copy()
+        thresholds = {}
+        for col in cols:
+            # Upper and lower bounds
+            upper_limit = df[col].mean() + z_threshold*df[col].std()
+            lower_limit = df[col].mean() - z_threshold*df[col].std()
+            thresholds[col] = [upper_limit, lower_limit]
+        return thresholds
+
+
+    def outlier_thresholds_skewed(self, dataframe, cols, iqr_threshold=1.5, upper_limit=None, lower_limit=None):
+        df = dataframe.copy()
+        thresholds = {}
+        for col in cols:
+            print(col)
+            # Upper and lower bounds
+            if upper_limit == None:
+                ul = df[col].quantile(0.75) + iqr_threshold*(df[col].quantile(0.75)-df[col].quantile(0.25))
+            else:
+                ul = upper_limit
+            if lower_limit == None:
+                ll = df[col].quantile(0.25) - iqr_threshold*(df[col].quantile(0.75)-df[col].quantile(0.25))
+            else:
+                ll = lower_limit
+            thresholds[col] = [ul, ll]
+        return thresholds
+
+    def apply_thresholds(self, dataframe, cols, thresholds):
+        df = dataframe.copy()
+        for col in cols:
+            # Upper and lower bounds
+            upper_limit = thresholds[col][0]
+            lower_limit = thresholds[col][1]
+            # Ammend value if above the upper limit.
+            # np.where parameters are (condition, value if true, value if false)
+            df[col] = np.where(df[col]>upper_limit, upper_limit, df[col])
+            # Ammend value if below the lower limit
+            df[col] = np.where(df[col]<lower_limit, lower_limit, df[col])
+        return df
+
 
     # Function to calculate features from feets package.
-    def extract_feets(self, timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid'):
+    def extract_feets(self, timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid', outliercap=False):
         df = self.lc.copy()
         # Feature lists
         single_feets_features = feets.FeatureSpace(data=['magnitude', 'time', 'error']).features_as_array_
@@ -493,7 +545,52 @@ class FeatureExtractor:
         # Concatenate the single and multi-band features
         df_feets = pd.concat([df_feets_g, df_feets_r, df_feets_multi], axis=1)
 
-        return df_feets
+        original = ['Amplitude_g', 'AndersonDarling_g', 'Autocor_length_g', 'Beyond1Std_g', 'CAR_mean_g', 'CAR_sigma_g', 
+            'CAR_tau_g', 'Con_g', 'Eta_e_g', 'FluxPercentileRatioMid20_g', 'FluxPercentileRatioMid35_g', 'FluxPercentileRatioMid50_g', 
+            'FluxPercentileRatioMid65_g', 'FluxPercentileRatioMid80_g', 'Freq1_harmonics_amplitude_0_g', 'Freq1_harmonics_amplitude_1_g', 
+            'Freq1_harmonics_amplitude_2_g', 'Freq1_harmonics_amplitude_3_g', 'Freq1_harmonics_rel_phase_0_g', 'Freq1_harmonics_rel_phase_1_g', 
+            'Freq1_harmonics_rel_phase_2_g', 'Freq1_harmonics_rel_phase_3_g', 'Freq2_harmonics_amplitude_0_g', 'Freq2_harmonics_amplitude_1_g', 
+            'Freq2_harmonics_amplitude_2_g', 'Freq2_harmonics_amplitude_3_g', 'Freq2_harmonics_rel_phase_0_g', 'Freq2_harmonics_rel_phase_1_g', 
+            'Freq2_harmonics_rel_phase_2_g', 'Freq2_harmonics_rel_phase_3_g', 'Freq3_harmonics_amplitude_0_g', 'Freq3_harmonics_amplitude_1_g', 
+            'Freq3_harmonics_amplitude_2_g', 'Freq3_harmonics_amplitude_3_g', 'Freq3_harmonics_rel_phase_0_g', 'Freq3_harmonics_rel_phase_1_g', 
+            'Freq3_harmonics_rel_phase_2_g', 'Freq3_harmonics_rel_phase_3_g', 'Gskew_g', 'LinearTrend_g', 'MaxSlope_g',
+            'Meanvariance_g', 'MedianAbsDev_g', 'MedianBRP_g', 'PairSlopeTrend_g', 'PercentAmplitude_g', 'PercentDifferenceFluxPercentile_g', 
+            'PeriodLS_g', 'Period_fit_g', 'Psi_CS_g', 'Psi_eta_g', 'Q31_g', 'Rcs_g', 'Skew_g', 'SlottedA_length_g', 'SmallKurtosis_g', 
+            'Std_g', 'StetsonK_g', 'StetsonK_AC_g', 'StructureFunction_index_21_g', 'StructureFunction_index_31_g', 
+            'StructureFunction_index_32_g']
+
+        replace = ['Amplitude_r', 'AndersonDarling_r', 'Autocor_length_r', 'Beyond1Std_r', 'CAR_mean_r', 'CAR_sigma_r', 'CAR_tau_r', 
+                'Con_r', 'Eta_e_r', 'FluxPercentileRatioMid20_r', 'FluxPercentileRatioMid35_r', 'FluxPercentileRatioMid50_r', 
+                'FluxPercentileRatioMid65_r', 'FluxPercentileRatioMid80_r', 'Freq1_harmonics_amplitude_0_r', 'Freq1_harmonics_amplitude_1_r', 
+                'Freq1_harmonics_amplitude_2_r', 'Freq1_harmonics_amplitude_3_r', 'Freq1_harmonics_rel_phase_0_r', 'Freq1_harmonics_rel_phase_1_r',
+                    'Freq1_harmonics_rel_phase_2_r', 'Freq1_harmonics_rel_phase_3_r', 'Freq2_harmonics_amplitude_0_r', 'Freq2_harmonics_amplitude_1_r', 
+                    'Freq2_harmonics_amplitude_2_r', 'Freq2_harmonics_amplitude_3_r', 'Freq2_harmonics_rel_phase_0_r', 'Freq2_harmonics_rel_phase_1_r', 
+                    'Freq2_harmonics_rel_phase_2_r', 'Freq2_harmonics_rel_phase_3_r', 'Freq3_harmonics_amplitude_0_r', 'Freq3_harmonics_amplitude_1_r', 
+                    'Freq3_harmonics_amplitude_2_r', 'Freq3_harmonics_amplitude_3_r', 'Freq3_harmonics_rel_phase_0_r', 'Freq3_harmonics_rel_phase_1_r', 
+                    'Freq3_harmonics_rel_phase_2_r', 'Freq3_harmonics_rel_phase_3_r', 'Gskew_r', 'LinearTrend_r', 'MaxSlope_r', 
+                    'Meanvariance_r', 'MedianAbsDev_r', 'MedianBRP_r', 'PairSlopeTrend_r', 'PercentAmplitude_r', 'PercentDifferenceFluxPercentile_r', 
+                    'PeriodLS_r', 'Period_fit_r', 'Psi_CS_r', 'Psi_eta_r', 'Q31_r', 'Rcs_r', 'Skew_r', 'SlottedA_length_r', 'SmallKurtosis_r', 
+                    'Std_r', 'StetsonK_r', 'StetsonK_AC_r', 'StructureFunction_index_21_r', 'StructureFunction_index_31_r', 
+                    'StructureFunction_index_32_r']
+        
+        newdf = self.impute_column(df_feets, original, replace)
+
+        if outliercap == True:
+            skewed_g = ['CAR_mean_g','CAR_sigma_g','Eta_e_g','Freq1_harmonics_amplitude_0_g', 'Freq1_harmonics_amplitude_1_g', 
+                 'Freq1_harmonics_amplitude_2_g', 'Freq1_harmonics_amplitude_3_g','Freq2_harmonics_amplitude_0_g', 
+                 'Freq2_harmonics_amplitude_1_g', 'Freq2_harmonics_amplitude_2_g', 'Freq2_harmonics_amplitude_3_g',
+                 'Freq3_harmonics_amplitude_0_g', 'Freq3_harmonics_amplitude_1_g', 'Freq3_harmonics_amplitude_2_g', 
+                 'Freq3_harmonics_amplitude_3_g','LinearTrend_g', 'MaxSlope_g','PeriodLS_g', 'Period_fit_g','SlottedA_length_g']
+
+            skewed_r = ['CAR_mean_r','CAR_sigma_r','Eta_e_r','Freq1_harmonics_amplitude_0_r', 'Freq1_harmonics_amplitude_1_r',
+                        'Freq1_harmonics_amplitude_2_r', 'Freq1_harmonics_amplitude_3_r','Freq2_harmonics_amplitude_0_r',
+                        'Freq2_harmonics_amplitude_1_r', 'Freq2_harmonics_amplitude_2_r', 'Freq2_harmonics_amplitude_3_r',
+                        'Freq3_harmonics_amplitude_0_r', 'Freq3_harmonics_amplitude_1_r', 'Freq3_harmonics_amplitude_2_r',
+                        'Freq3_harmonics_amplitude_3_r','LinearTrend_r', 'MaxSlope_r','PeriodLS_r', 'Period_fit_r','SlottedA_length_r']
+
+            ots = self.outlier_thresholds_skewed(newdf, skewed_g+skewed_r, iqr_threshold=2, upper_limit=None, lower_limit=0)
+            newdf = self.apply_thresholds(newdf, skewed_g+skewed_r, ots)
+        return newdf
 
 
     # Extract custom features
@@ -525,7 +622,6 @@ class FeatureExtractor:
             df_cust[f'dif_max_median_{filter}'] = abs(df_cust[f'max_mag_{filter}'] - df_cust[f'median_{filter}']).iloc[0]
             df_cust[f'dif_max_min_{filter}'] = abs(df[magCol].max() - df[magCol].min())
             df_cust[f'temporal_baseline_{filter}'] = df[timeCol].max() - df[timeCol].min()
-            df_cust[f'avg_obs_per_day_{filter}'] = df_cust[f'n_obs_{filter}']/df_cust[f'temporal_baseline_{filter}']
             df_cust[f'kurtosis_{filter}'] = df[magCol].kurtosis()
 
             # Lomb Scargle based features
@@ -535,7 +631,7 @@ class FeatureExtractor:
                 df_cust[f'pwr_max_{filter}'] = [power.max()]
                 df_cust[f'freq_pwr_max_{filter}'] = [frequency[np.where(power==power.max())][0]]
                 df_cust[f'FalseAlarm_prob_{filter}'] = [ls.false_alarm_probability(power.max())]
-                df_cust[f'pwr_maxovermean_{filter}'] = [df_cust[f'pwr_max_{filter}']/power.mean()]
+                df_cust[f'pwr_maxovermean_{filter}'] = df_cust[f'pwr_max_{filter}']/power.mean()
             else:
                 df_cust[f'pwr_max_{filter}'] = [np.nan]
                 df_cust[f'freq_pwr_max_{filter}'] = [np.nan]
@@ -570,7 +666,7 @@ class FeatureExtractor:
 
             # Standstill finder features
             df_cust[f'rollstd_ratio_t20s10_{filter}'] = [self.standstill_finder(df, pnt_threshold=20, window_size=10)[0]]
-            df_cust[f'stdstilllev_t20s10{filter}'] = [self.standstill_finder(df, pnt_threshold=20, window_size=10)[1]]
+            df_cust[f'stdstilllev_t20s10_{filter}'] = [self.standstill_finder(df, pnt_threshold=20, window_size=10)[1]]
             df_cust[f'rollstd_ratio_t10s5_{filter}'] = [self.standstill_finder(df, pnt_threshold=10, window_size=5)[0]]
             df_cust[f'stdstilllev_t10s5{filter}'] = [self.standstill_finder(df, pnt_threshold=10, window_size=5)[1]]
 
@@ -625,8 +721,7 @@ class FeatureExtractor:
                         deviation_type='mag',
                         delta=d
                         )]
-            
-            
+                
             return df_cust
                 
         
@@ -641,7 +736,41 @@ class FeatureExtractor:
         df_custom['clr_bright'] = [self.clr(df)[3]]
         df_custom['clr_faint'] = [self.clr(df)[4]]
 
-        # df_custom.drop(['mean_g', 'mean_r', 'std_g', 'std_r', 'MAD_g', 'MAD_r'], axis=1, inplace=True)
+        df_custom.drop(['mean_g', 'mean_r'], axis=1, inplace=True)
 
-        return df_custom
+        original = ['dif_min_mean_g', 'dif_min_median_g', 'dif_max_mean_g', 'dif_max_median_g', 'dif_max_min_g', 
+                         'kurtosis_g', 'pwr_max_g', 'freq_pwr_max_g', 'FalseAlarm_prob_g', 'pwr_maxovermean_g']
+
+        replace = ['dif_min_mean_r', 'dif_min_median_r', 'dif_max_mean_r', 'dif_max_median_r', 'dif_max_min_r', 
+                    'kurtosis_r', 'pwr_max_r', 'freq_pwr_max_r', 'FalseAlarm_prob_r', 'pwr_maxovermean_r']
+
+        original2 = ['pnts_leq_rollMedWin20-1mag_g', 'pnts_leq_rollMedWin20-2mag_g', 'pnts_leq_rollMedWin20-5mag_g', 
+                    'pnts_geq_rollMedWin20+1mag_g', 'pnts_geq_rollMedWin20+2mag_g', 'pnts_geq_rollMedWin20+3mag_g', 
+                    'pnts_leq_rollMedWin20-1mag_r', 'pnts_leq_rollMedWin20-2mag_r', 'pnts_leq_rollMedWin20-5mag_r', 
+                    'pnts_geq_rollMedWin20+1mag_r', 'pnts_geq_rollMedWin20+2mag_r', 'pnts_geq_rollMedWin20+3mag_r',
+                    'rollstd_ratio_t20s10_g','stdstilllev_t20s10_g','rollstd_ratio_t20s10_r','stdstilllev_t20s10_r']
+
+        replace2 = ['pnts_leq_median-1mag_g', 'pnts_leq_median-2mag_g', 'pnts_leq_median-5mag_g', 
+                    'pnts_geq_median+1mag_g', 'pnts_geq_median+2mag_g', 'pnts_geq_median+3mag_g',
+                    'pnts_leq_median-1mag_r', 'pnts_leq_median-2mag_r', 'pnts_leq_median-5mag_r',
+                    'pnts_geq_median+1mag_r', 'pnts_geq_median+2mag_r', 'pnts_geq_median+3mag_r',
+                    'rollstd_ratio_t10s5_g', 'stdstilllev_t10s5g','rollstd_ratio_t10s5_r', 'stdstilllev_t10s5r']
+        
+        original3 = ['pnts_leq_rollMedWin20-1mag_g', 'pnts_leq_rollMedWin20-2mag_g', 'pnts_leq_rollMedWin20-5mag_g', 
+                     'pnts_geq_rollMedWin20+1mag_g', 'pnts_geq_rollMedWin20+2mag_g', 'pnts_geq_rollMedWin20+3mag_g', 
+                     'pnts_leq_median-1mag_g', 'pnts_leq_median-2mag_g', 'pnts_leq_median-5mag_g', 
+                     'pnts_geq_median+1mag_g', 'pnts_geq_median+2mag_g', 'pnts_geq_median+3mag_g',
+                     'rollstd_ratio_t20s10_g','stdstilllev_t20s10_g','rollstd_ratio_t10s5_g', 'stdstilllev_t10s5g']
+
+        replace3 = ['pnts_leq_rollMedWin20-1mag_r', 'pnts_leq_rollMedWin20-2mag_r', 'pnts_leq_rollMedWin20-5mag_r', 
+                    'pnts_geq_rollMedWin20+1mag_r', 'pnts_geq_rollMedWin20+2mag_r', 'pnts_geq_rollMedWin20+3mag_r',
+                    'pnts_leq_median-1mag_r', 'pnts_leq_median-2mag_r', 'pnts_leq_median-5mag_r',
+                    'pnts_geq_median+1mag_r', 'pnts_geq_median+2mag_r', 'pnts_geq_median+3mag_r',
+                    'rollstd_ratio_t20s10_r','stdstilllev_t20s10_r','rollstd_ratio_t10s5_r', 'stdstilllev_t10s5r']
+
+        newdf = self.impute_column(df_custom, original, replace)
+        newdf2 = self.impute_column(newdf, original2, replace2, reversed=False)
+        newdf3 = self.impute_column(newdf2, original3, replace3, reversed=True)
+
+        return newdf2
 
