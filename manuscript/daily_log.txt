@@ -1,3 +1,12 @@
+IMPORTANT STUFF:
+
+Use:
+
+GIT_CURL_VERBOSE=1 git push origin main
+
+If Git push origin main does not work.
+
+
 29th March 2023:
 
 Had a scan through light curves of SU Uma type systems. Specifically those that are not sub labelled as AM Cvns, or DQ Her systems.
@@ -49,5 +58,9 @@ Need to focus on magnetic CVs and novae now.
 - Completed the construction of light curve based features and placed them into the module.
 - The module works fine now.
 - Next step would be to incorporate metadata based features.
+
+
+
+
 
 
