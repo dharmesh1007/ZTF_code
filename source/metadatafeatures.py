@@ -4,6 +4,14 @@ import pandas as pd
 import numpy as np
 import math
 
+# Get distance and absolute magnitude from Gaia parallax and apparent magnitude.
+def distance(parallax):
+    """Convert Gaia parallax to distance in parsecs."""
+    return 1000./parallax
+
+def absmag(appmag, distance):
+    """Convert apparent magnitude to absolute magnitude."""
+    return appmag - 5*np.log10(distance) + 5
 
 # Functions to acquire Gaia metadata.
 
@@ -171,6 +179,10 @@ def gaiadr3append(df, objcol):
     # This dataframe contains all the cross matches, whether proper motion was present or not.
     metadata_df = metadata_df.drop(columns=['solution_id','DESIGNATION','source_id','random_index','designation'])
 
+    # Lets get rid of columns with dtypes of object. Then lets replace inf values with NaN.
+    metadata_df = metadata_df.select_dtypes(exclude=['object'])
+    metadata_df = metadata_df.replace([np.inf, -np.inf], np.nan)
+
     # Attach ZTF object IDs to the metadata table.
     # We need to reset the index of the ZTF_CVs dataframe so it starts at 1.
     # This can be used to match with the ast_table_oid column from the metadata table.
@@ -231,7 +243,15 @@ def gaiadr3append(df, objcol):
     ztf_gaia_df = ztf_gaia_df.drop(columns=['ast_table_oid','raj2000','decj2000','ref_epoch','ra_y','dec_y',
                                             'dec_y','dist_arcsec','dist_arcsec2','duplicated','info_rank'])
     ztf_gaia_df.rename(columns={'ra_x':'ra','dec_x':'dec'}, inplace=True)
-    ztf_gaia_df
+
+    # Add distance column
+    ztf_gaia_df['distance'] = distance(ztf_gaia_df['parallax'])
+    # Add absolute g magnitude column
+    ztf_gaia_df['absmag_g'] = absmag(ztf_gaia_df['phot_g_mean_mag'], ztf_gaia_df['distance'])
+    # Add absolute bp magnitude column
+    ztf_gaia_df['absmag_bp'] = absmag(ztf_gaia_df['phot_bp_mean_mag'], ztf_gaia_df['distance'])
+    # Add absolute rp magnitude column
+    ztf_gaia_df['absmag_rp'] = absmag(ztf_gaia_df['phot_rp_mean_mag'], ztf_gaia_df['distance'])
 
     return ztf_gaia_df
 
@@ -300,12 +320,3 @@ def esa_archive(target_df, radius, table='gaiadr3.gaia_source', shortname='gaia_
     Gaia.logout()
 
     return df_archive
-
-
-def distance(parallax):
-    """Convert Gaia parallax to distance in parsecs."""
-    return 1000./parallax
-
-def absmag(appmag, distance):
-    """Convert apparent magnitude to absolute magnitude."""
-    return appmag - 5*np.log10(distance) + 5

@@ -5,6 +5,7 @@ from astropy.timeseries import LombScargle
 from scipy.signal import find_peaks
 from scipy.stats import linregress
 import time
+from outlier import outlier_thresholds_skewed, apply_thresholds
 
 class FeatureExtractor:
     def __init__(self, lc):
@@ -336,53 +337,19 @@ class FeatureExtractor:
                 df[col2] = np.where(df[col2].isnull(), df[col1], df[col2])
         return df
     
-    def outlier_thresholds_normal(self, dataframe, cols, z_threshold=3):
-        df = dataframe.copy()
-        thresholds = {}
-        for col in cols:
-            # Upper and lower bounds
-            upper_limit = df[col].mean() + z_threshold*df[col].std()
-            lower_limit = df[col].mean() - z_threshold*df[col].std()
-            thresholds[col] = [upper_limit, lower_limit]
-        return thresholds
-
-
-    def outlier_thresholds_skewed(self, dataframe, cols, iqr_threshold=1.5, upper_limit=None, lower_limit=None):
-        df = dataframe.copy()
-        thresholds = {}
-        for col in cols:
-            print(col)
-            # Upper and lower bounds
-            if upper_limit == None:
-                ul = df[col].quantile(0.75) + iqr_threshold*(df[col].quantile(0.75)-df[col].quantile(0.25))
-            else:
-                ul = upper_limit
-            if lower_limit == None:
-                ll = df[col].quantile(0.25) - iqr_threshold*(df[col].quantile(0.75)-df[col].quantile(0.25))
-            else:
-                ll = lower_limit
-            thresholds[col] = [ul, ll]
-        return thresholds
-
-    def apply_thresholds(self, dataframe, cols, thresholds):
-        df = dataframe.copy()
-        for col in cols:
-            # Upper and lower bounds
-            upper_limit = thresholds[col][0]
-            lower_limit = thresholds[col][1]
-            # Ammend value if above the upper limit.
-            # np.where parameters are (condition, value if true, value if false)
-            df[col] = np.where(df[col]>upper_limit, upper_limit, df[col])
-            # Ammend value if below the lower limit
-            df[col] = np.where(df[col]<lower_limit, lower_limit, df[col])
-        return df
-
-
+    
     # Function to calculate features from feets package.
-    def extract_feets(self, timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid', outliercap=False):
+    def extract_feets(self, custom_remove=None, 
+                      timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid', 
+                      outliercap=False):
+        
         df = self.lc.copy()
         # Feature lists
         single_feets_features = feets.FeatureSpace(data=['magnitude', 'time', 'error']).features_as_array_
+        if custom_remove is not None:
+            # remove custom features
+            single_feets_features = np.delete(single_feets_features, np.where(np.isin(single_feets_features, custom_remove)))
+
         multi_feets_features = feets.FeatureSpace(data=['aligned_time', 'aligned_magnitude', 'aligned_magnitude2', 
                                                         'aligned_error', 'aligned_error2']).features_as_array_
         
@@ -575,6 +542,10 @@ class FeatureExtractor:
         
         newdf = self.impute_column(df_feets, original, replace)
 
+        # Lets replace inf values with nan
+        newdf = newdf.replace([np.inf, -np.inf], np.nan)
+
+        # Handle some outlliers
         if outliercap == True:
             skewed_g = ['CAR_mean_g','CAR_sigma_g','Eta_e_g','Freq1_harmonics_amplitude_0_g', 'Freq1_harmonics_amplitude_1_g', 
                  'Freq1_harmonics_amplitude_2_g', 'Freq1_harmonics_amplitude_3_g','Freq2_harmonics_amplitude_0_g', 
@@ -588,13 +559,14 @@ class FeatureExtractor:
                         'Freq3_harmonics_amplitude_0_r', 'Freq3_harmonics_amplitude_1_r', 'Freq3_harmonics_amplitude_2_r',
                         'Freq3_harmonics_amplitude_3_r','LinearTrend_r', 'MaxSlope_r','PeriodLS_r', 'Period_fit_r','SlottedA_length_r']
 
-            ots = self.outlier_thresholds_skewed(newdf, skewed_g+skewed_r, iqr_threshold=2, upper_limit=None, lower_limit=0)
-            newdf = self.apply_thresholds(newdf, skewed_g+skewed_r, ots)
+            ots = outlier_thresholds_skewed(newdf, skewed_g+skewed_r, iqr_threshold=2, upper_limit=None, lower_limit=0)
+            newdf = apply_thresholds(newdf, skewed_g+skewed_r, ots)
+        
         return newdf
 
 
     # Extract custom features
-    def extract_custom(self, timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid'):
+    def extract_custom(self, remove=None, timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid'):
         df = self.lc.copy()
         # Some pre-processing
         dfg = df[df[fieldCol]==1].copy()
@@ -772,5 +744,9 @@ class FeatureExtractor:
         newdf2 = self.impute_column(newdf, original2, replace2, reversed=False)
         newdf3 = self.impute_column(newdf2, original3, replace3, reversed=True)
 
-        return newdf2
+        # Drop columns that are in remove list
+        if remove is not None:
+            newdf3.drop(remove, axis=1, inplace=True)
+
+        return newdf3
 
