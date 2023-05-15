@@ -15,7 +15,6 @@ def outlier_thresholds_skewed(dataframe, cols, iqr_threshold=1.5, upper_limit=No
     df = dataframe.copy()
     thresholds = {}
     for col in cols:
-        print(col)
         # Upper and lower bounds
         if upper_limit == None:
             ul = df[col].quantile(0.75) + iqr_threshold*(df[col].quantile(0.75)-df[col].quantile(0.25))

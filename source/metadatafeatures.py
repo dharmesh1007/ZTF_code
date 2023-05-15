@@ -179,10 +179,6 @@ def gaiadr3append(df, objcol):
     # This dataframe contains all the cross matches, whether proper motion was present or not.
     metadata_df = metadata_df.drop(columns=['solution_id','DESIGNATION','source_id','random_index','designation'])
 
-    # Lets get rid of columns with dtypes of object. Then lets replace inf values with NaN.
-    metadata_df = metadata_df.select_dtypes(exclude=['object'])
-    metadata_df = metadata_df.replace([np.inf, -np.inf], np.nan)
-
     # Attach ZTF object IDs to the metadata table.
     # We need to reset the index of the ZTF_CVs dataframe so it starts at 1.
     # This can be used to match with the ast_table_oid column from the metadata table.
