@@ -184,6 +184,7 @@ def gaiadr3append(df, objcol):
     # This can be used to match with the ast_table_oid column from the metadata table.
     ZTF_CVs_cpy = ZTF_CVs.copy()
     ZTF_CVs_cpy.index = ZTF_CVs_cpy.index+1
+    ZTF_CVs_cpy = ZTF_CVs_cpy[[objcol, 'ra', 'dec']]
 
     # Join the ZTF_CVs dataframe with the metadata dataframe on index and ast_table_oid.
     ztf_gaia_df = ZTF_CVs_cpy.merge(metadata_df, how='outer', left_index=True, right_on='ast_table_oid')
@@ -248,6 +249,10 @@ def gaiadr3append(df, objcol):
     ztf_gaia_df['absmag_bp'] = absmag(ztf_gaia_df['phot_bp_mean_mag'], ztf_gaia_df['distance'])
     # Add absolute rp magnitude column
     ztf_gaia_df['absmag_rp'] = absmag(ztf_gaia_df['phot_rp_mean_mag'], ztf_gaia_df['distance'])
+
+    # Drop some columns
+    feature_cols = ztf_gaia_df.columns.tolist()[16:]
+
 
     return ztf_gaia_df
 

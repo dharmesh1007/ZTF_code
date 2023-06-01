@@ -5,7 +5,10 @@ from astropy.timeseries import LombScargle
 from scipy.signal import find_peaks
 from scipy.stats import linregress
 import time
+from lcfunctions import load_lasair_lc, lasair_clean
 from outlier import outlier_thresholds_skewed, apply_thresholds
+import warnings
+warnings.filterwarnings("ignore")
 
 class FeatureExtractor:
     def __init__(self, lc):
@@ -341,14 +344,11 @@ class FeatureExtractor:
     # Function to calculate features from feets package.
     def extract_feets(self, custom_remove=None, 
                       timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid', 
-                      outliercap=False):
+                      outliercap=True):
         
         df = self.lc.copy()
         # Feature lists
         single_feets_features = feets.FeatureSpace(data=['magnitude', 'time', 'error']).features_as_array_
-        if custom_remove is not None:
-            # remove custom features
-            single_feets_features = np.delete(single_feets_features, np.where(np.isin(single_feets_features, custom_remove)))
 
         multi_feets_features = feets.FeatureSpace(data=['aligned_time', 'aligned_magnitude', 'aligned_magnitude2', 
                                                         'aligned_error', 'aligned_error2']).features_as_array_
@@ -385,6 +385,16 @@ class FeatureExtractor:
                                 'FluxPercentileRatioMid65', 'FluxPercentileRatioMid80', 'PercentDifferenceFluxPercentile'],
                         }
 
+        if custom_remove is not None:
+            # remove custom features and drop duplicates
+            single_feets_features = np.delete(single_feets_features, np.where(np.isin(single_feets_features, custom_remove)))
+            multi_feets_features = np.delete(multi_feets_features, np.where(np.isin(multi_feets_features, custom_remove)))
+            
+            # Append _g and _r to custom_remove for later use
+            custom_remove_g = [x + '_g' for x in custom_remove]
+            custom_remove_r = [x + '_r' for x in custom_remove]
+            custom_remove_gandr = custom_remove_g + custom_remove_r
+
         # Some pre-processing
         dfg = df[df[fieldCol]==1].copy()
         dfr = df[df[fieldCol]==2].copy()
@@ -418,7 +428,13 @@ class FeatureExtractor:
 
             elif df.shape[0]==1:
                 # Extract features for df
-                single_feets_features_revised = np.delete(single_feets_features, np.where(np.isin(single_feets_features, feat_remove['1'])))
+                if custom_remove is not None:
+                    notextract = feat_remove['1'] + custom_remove
+                    notextract = list(set(notextract))
+                else:
+                    notextract = feat_remove['1']
+                
+                single_feets_features_revised = np.delete(single_feets_features, np.where(np.isin(single_feets_features, notextract)))
                 fs = feets.FeatureSpace(only=list(single_feets_features_revised))
                 features, values = fs.extract(time=df[timeCol],
                                             magnitude=df[magCol], 
@@ -428,12 +444,23 @@ class FeatureExtractor:
                 # Add '_g' to the column names.
                 df_feets_single.columns = [col+f'_{filter}' for col in df_feets_single.columns]
                 # Add in the dropped features as columns with NaN values.
-                for f in feat_remove['1']:
+                if custom_remove is not None:
+                    add_cols = [f for f in feat_remove['1'] if f not in custom_remove]
+                else:
+                    add_cols = feat_remove['1']
+
+                for f in add_cols:
                     df_feets_single[f+f'_{filter}'] = np.nan
             
             elif df.shape[0]==2:
                 # Extract features for dfg
-                single_feets_features_revised = np.delete(single_feets_features, np.where(np.isin(single_feets_features, feat_remove['2'])))
+                if custom_remove is not None:
+                    notextract = feat_remove['2'] + custom_remove
+                    notextract = list(set(notextract))
+                else:
+                    notextract = feat_remove['2']
+                
+                single_feets_features_revised = np.delete(single_feets_features, np.where(np.isin(single_feets_features, notextract)))
                 fs = feets.FeatureSpace(only=list(single_feets_features_revised))
                 features, values = fs.extract(time=df[timeCol],
                                             magnitude=df[magCol], 
@@ -443,12 +470,23 @@ class FeatureExtractor:
                 # Add '_g' to the column names.
                 df_feets_single.columns = [col+f'_{filter}' for col in df_feets_single.columns]
                 # Add in the dropped features as columns with NaN values.
-                for f in feat_remove['2']:
+                if custom_remove is not None:
+                    add_cols = [f for f in feat_remove['2'] if f not in custom_remove]
+                else:
+                    add_cols = feat_remove['2']
+
+                for f in add_cols:
                     df_feets_single[f+f'_{filter}'] = np.nan
             
             elif df.shape[0]==3:
-                # Extract features for dfg
-                single_feets_features_revised = np.delete(single_feets_features, np.where(np.isin(single_feets_features, feat_remove['3'])))
+                # Extract features for df
+                if custom_remove is not None:
+                    notextract = feat_remove['3'] + custom_remove
+                    notextract = list(set(notextract))
+                else:
+                    notextract = feat_remove['3']
+                
+                single_feets_features_revised = np.delete(single_feets_features, np.where(np.isin(single_feets_features, notextract)))
                 fs = feets.FeatureSpace(only=list(single_feets_features_revised))
                 features, values = fs.extract(time=df[timeCol],
                                             magnitude=df[magCol], 
@@ -458,12 +496,24 @@ class FeatureExtractor:
                 # Add '_g' to the column names.
                 df_feets_single.columns = [col+f'_{filter}' for col in df_feets_single.columns]
                 # Add in the dropped features as columns with NaN values.
-                for f in feat_remove['3']:
+                if custom_remove is not None:
+                    add_cols = [f for f in feat_remove['3'] if f not in custom_remove]
+                else:
+                    add_cols = feat_remove['3']
+
+                for f in add_cols:
+                    print(f)
                     df_feets_single[f+f'_{filter}'] = np.nan
             
             elif (df.shape[0]>3) & (df.shape[0]<20):
                 # Extract features for df
-                single_feets_features_revised = np.delete(single_feets_features, np.where(np.isin(single_feets_features, feat_remove['4to19'])))
+                if custom_remove is not None:
+                    notextract = feat_remove['4to19'] + custom_remove
+                    notextract = list(set(notextract))
+                else:
+                    notextract = feat_remove['4to19']
+                
+                single_feets_features_revised = np.delete(single_feets_features, np.where(np.isin(single_feets_features, notextract)))
                 fs = feets.FeatureSpace(only=list(single_feets_features_revised))
                 features, values = fs.extract(time=df[timeCol],
                                             magnitude=df[magCol], 
@@ -474,7 +524,12 @@ class FeatureExtractor:
                 # Add '_filter' to the column names.
                 df_feets_single.columns = [col+f'_{filter}' for col in df_feets_single.columns]
                 # Add in the dropped features as columns with NaN values.
-                for f in feat_remove['4to19']:
+                if custom_remove is not None:
+                    add_cols = [f for f in feat_remove['4to19'] if f not in custom_remove]
+                else:
+                    add_cols = feat_remove['4to19']
+
+                for f in add_cols:
                     df_feets_single[f+f'_{filter}'] = np.nan
 
             else:
@@ -512,6 +567,7 @@ class FeatureExtractor:
         # Concatenate the single and multi-band features
         df_feets = pd.concat([df_feets_g, df_feets_r, df_feets_multi], axis=1)
 
+        # Impute based on subject knowledge
         original = ['Amplitude_g', 'AndersonDarling_g', 'Autocor_length_g', 'Beyond1Std_g', 'CAR_mean_g', 'CAR_sigma_g', 
             'CAR_tau_g', 'Con_g', 'Eta_e_g', 'FluxPercentileRatioMid20_g', 'FluxPercentileRatioMid35_g', 'FluxPercentileRatioMid50_g', 
             'FluxPercentileRatioMid65_g', 'FluxPercentileRatioMid80_g', 'Freq1_harmonics_amplitude_0_g', 'Freq1_harmonics_amplitude_1_g', 
@@ -540,6 +596,10 @@ class FeatureExtractor:
                     'Std_r', 'StetsonK_r', 'StetsonK_AC_r', 'StructureFunction_index_21_r', 'StructureFunction_index_31_r', 
                     'StructureFunction_index_32_r']
         
+        if custom_remove is not None:
+            original = [x for x in original if x not in custom_remove_gandr]
+            replace = [x for x in replace if x not in custom_remove_gandr]
+        
         newdf = self.impute_column(df_feets, original, replace)
 
         # Lets replace inf values with nan
@@ -559,9 +619,13 @@ class FeatureExtractor:
                         'Freq3_harmonics_amplitude_0_r', 'Freq3_harmonics_amplitude_1_r', 'Freq3_harmonics_amplitude_2_r',
                         'Freq3_harmonics_amplitude_3_r','LinearTrend_r', 'MaxSlope_r','PeriodLS_r', 'Period_fit_r','SlottedA_length_r']
 
+            if custom_remove is not None:
+                skewed_g = [x for x in skewed_g if x not in custom_remove_gandr]
+                skewed_r = [x for x in skewed_r if x not in custom_remove_gandr]
+
             ots = outlier_thresholds_skewed(newdf, skewed_g+skewed_r, iqr_threshold=2, upper_limit=None, lower_limit=0)
             newdf = apply_thresholds(newdf, skewed_g+skewed_r, ots)
-        
+
         return newdf
 
 
@@ -749,4 +813,3 @@ class FeatureExtractor:
             newdf3.drop(remove, axis=1, inplace=True)
 
         return newdf3
-

@@ -59,6 +59,14 @@ Need to focus on magnetic CVs and novae now.
 - The module works fine now.
 - Next step would be to incorporate metadata based features.
 
+23rd May 2023:
+
+- Formulation of a feature extraction routine based on existing algorithm
+- identify features to extract
+- identify processing mechanism
+- set up function  
+
+
 
 
 

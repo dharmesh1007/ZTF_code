@@ -1,11 +1,14 @@
 import pandas as pd
+#suppress warnings
+import warnings
+warnings.filterwarnings("ignore")
 
-def label_schemes(cvs_df):
+def label_schemes(df):
 
     # This function is just for the manually labelled csv file, that is the input.
 
     # Select columns; rename columns.
-    cvs_df = cvs_df[['Xmatch_obj','Name','Type','ra','dec','Eclipsing','CV_Types','CV_subtypes',
+    cvs_df = df[['Xmatch_obj','Name','Type','ra','dec','Eclipsing','CV_Types','CV_subtypes',
                  'CV_subsubtypes','eclipse_clear','manual_label','Clarity']]
     
     cvs_df.rename(columns={'Xmatch_obj':'oid_ztf', 'Name':'oid_aavso','Type':'type_aavso'}, inplace=True)
