@@ -502,7 +502,6 @@ class FeatureExtractor:
                     add_cols = feat_remove['3']
 
                 for f in add_cols:
-                    print(f)
                     df_feets_single[f+f'_{filter}'] = np.nan
             
             elif (df.shape[0]>3) & (df.shape[0]<20):

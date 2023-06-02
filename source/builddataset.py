@@ -1,7 +1,9 @@
 from lcfunctions import load_lasair_lc, lasair_clean
 from featureextractor import FeatureExtractor
-import pandas as pd
 from metadatafeatures import gaiadr3append
+import pandas as pd
+import numpy as np
+
 
 def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_25'):
     
@@ -57,28 +59,35 @@ def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_
 
         # Extract features
         fe = FeatureExtractor(lc=lc)
-        feets = fe.extract_feets(outliercap=True, custom_remove=['FalseAlarm_prob','FalseAlarm_prob','Eta_color',
+        feets = fe.extract_feets(outliercap=True, custom_remove=['FalseAlarm_prob','Eta_color',
                                                                  'Freq1_harmonics_rel_phase_0', 
                                                                  'Freq2_harmonics_rel_phase_0', 
                                                                  'Freq3_harmonics_rel_phase_0'])
         
         custom = fe.extract_custom()
         
-        
         # Conactenate custom features to feets
         features_single = pd.concat([feets, custom], axis=1)
-
         # Add features to dataframe
         feature_df = feature_df.append(features_single, ignore_index=True)
 
     # Add oid to dataframe as the first column
     feature_df.insert(0, 'oid_ztf', objlist)
-    feature_df['oid_ztf'] = objlist # This is another way to do it
+    # feature_df['oid_ztf'] = objlist # This is another way to do it
+
+    # Replace inf values with nan
+    for col in metadata.iloc[:, 1:]:
+        metadata.loc[(metadata[col]==np.inf)|(metadata[col]==-np.inf), col] = np.nan
+    
+    for col in feature_df.iloc[:, 1:]:
+        feature_df.loc[(feature_df[col]==np.inf)|(feature_df[col]==-np.inf), col] = np.nan
     
     # Merge the two datasets
-    merged = pd.merge(feature_df, metadata, left_on='oid_ztf', right_on='Xmatch_obj', how='left')
-    # Drop the Xmatch_obj column
-    merged = merged.drop(columns=['Xmatch_obj'])
+    merged = pd.merge(feature_df, metadata, left_on='oid_ztf', right_on=objcol, how='left')
+
+    if objcol != 'oid_ztf':
+        # Drop the Xmatch_obj column
+        merged = merged.drop(columns=[objcol])
 
     return feature_df, metadata, merged
 
