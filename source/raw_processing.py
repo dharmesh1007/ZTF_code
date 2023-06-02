@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.compose import ColumnTransformer
 #suppress warnings
 import warnings
 warnings.filterwarnings("ignore")
@@ -79,3 +80,17 @@ def label_schemes(df):
     # print(cvs_df.labels_4.value_counts())
 
     return cvs_df
+
+# Subclass ColumnTransformer to return a Dataframe with columns instead of just an array (what is usually returned)
+# This is useful after imputation.
+class ColumnTransformerPandas(ColumnTransformer):
+    def fit(self, X, y=None):
+        self.columns = X.columns
+        return super().fit(X, y)
+
+    def transform(self, X):
+        return pd.DataFrame(super().transform(X), columns=self.columns)
+    
+    def fit_transform(self, X, y=None):
+        self.columns = X.columns
+        return pd.DataFrame(super().fit_transform(X, y), columns=self.columns)
