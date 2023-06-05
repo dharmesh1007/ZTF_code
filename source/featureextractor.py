@@ -343,8 +343,7 @@ class FeatureExtractor:
     
     # Function to calculate features from feets package.
     def extract_feets(self, custom_remove=None, 
-                      timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid', 
-                      outliercap=True):
+                      timeCol='jd', magCol='dc_mag', errCol='dc_sigmag', fieldCol='fid'):
         
         df = self.lc.copy()
         # Feature lists
@@ -603,27 +602,6 @@ class FeatureExtractor:
 
         # Lets replace inf values with nan
         newdf = newdf.replace([np.inf, -np.inf], np.nan)
-
-        # Handle some outlliers
-        if outliercap == True:
-            skewed_g = ['CAR_mean_g','CAR_sigma_g','Eta_e_g','Freq1_harmonics_amplitude_0_g', 'Freq1_harmonics_amplitude_1_g', 
-                 'Freq1_harmonics_amplitude_2_g', 'Freq1_harmonics_amplitude_3_g','Freq2_harmonics_amplitude_0_g', 
-                 'Freq2_harmonics_amplitude_1_g', 'Freq2_harmonics_amplitude_2_g', 'Freq2_harmonics_amplitude_3_g',
-                 'Freq3_harmonics_amplitude_0_g', 'Freq3_harmonics_amplitude_1_g', 'Freq3_harmonics_amplitude_2_g', 
-                 'Freq3_harmonics_amplitude_3_g','LinearTrend_g', 'MaxSlope_g','PeriodLS_g', 'Period_fit_g','SlottedA_length_g']
-
-            skewed_r = ['CAR_mean_r','CAR_sigma_r','Eta_e_r','Freq1_harmonics_amplitude_0_r', 'Freq1_harmonics_amplitude_1_r',
-                        'Freq1_harmonics_amplitude_2_r', 'Freq1_harmonics_amplitude_3_r','Freq2_harmonics_amplitude_0_r',
-                        'Freq2_harmonics_amplitude_1_r', 'Freq2_harmonics_amplitude_2_r', 'Freq2_harmonics_amplitude_3_r',
-                        'Freq3_harmonics_amplitude_0_r', 'Freq3_harmonics_amplitude_1_r', 'Freq3_harmonics_amplitude_2_r',
-                        'Freq3_harmonics_amplitude_3_r','LinearTrend_r', 'MaxSlope_r','PeriodLS_r', 'Period_fit_r','SlottedA_length_r']
-
-            if custom_remove is not None:
-                skewed_g = [x for x in skewed_g if x not in custom_remove_gandr]
-                skewed_r = [x for x in skewed_r if x not in custom_remove_gandr]
-
-            ots = outlier_thresholds_skewed(newdf, skewed_g+skewed_r, iqr_threshold=2, upper_limit=None, lower_limit=0)
-            newdf = apply_thresholds(newdf, skewed_g+skewed_r, ots)
 
         return newdf
 

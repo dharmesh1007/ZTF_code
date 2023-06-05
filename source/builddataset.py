@@ -3,9 +3,10 @@ from featureextractor import FeatureExtractor
 from metadatafeatures import gaiadr3append
 import pandas as pd
 import numpy as np
+from outlier import outlier_thresholds_skewed, apply_thresholds
 
 
-def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_25'):
+def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_25', outliercap=True, thresholds=None):
     
     metadata = gaiadr3append(df=df, objcol=objcol)
 
@@ -57,12 +58,15 @@ def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_
         # Create a copy of the light curve
         lc = lc_appmag_test.copy()
 
+        # Columns to remove
+        custom_remove = ['FalseAlarm_prob','Eta_color',
+                         'Freq1_harmonics_rel_phase_0', 
+                         'Freq2_harmonics_rel_phase_0', 
+                         'Freq3_harmonics_rel_phase_0']
+
         # Extract features
         fe = FeatureExtractor(lc=lc)
-        feets = fe.extract_feets(outliercap=True, custom_remove=['FalseAlarm_prob','Eta_color',
-                                                                 'Freq1_harmonics_rel_phase_0', 
-                                                                 'Freq2_harmonics_rel_phase_0', 
-                                                                 'Freq3_harmonics_rel_phase_0'])
+        feets = fe.extract_feets(custom_remove=custom_remove)
         
         custom = fe.extract_custom()
         
@@ -70,7 +74,8 @@ def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_
         features_single = pd.concat([feets, custom], axis=1)
         # Add features to dataframe
         feature_df = feature_df.append(features_single, ignore_index=True)
-
+    
+    
     # Add oid to dataframe as the first column
     feature_df.insert(0, 'oid_ztf', objlist)
     # feature_df['oid_ztf'] = objlist # This is another way to do it
@@ -82,6 +87,38 @@ def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_
     for col in feature_df.iloc[:, 1:]:
         feature_df.loc[(feature_df[col]==np.inf)|(feature_df[col]==-np.inf), col] = np.nan
     
+    # Handle some outlliers
+    if outliercap == True:
+        skewed_g = ['CAR_mean_g','CAR_sigma_g','Eta_e_g','Freq1_harmonics_amplitude_0_g', 'Freq1_harmonics_amplitude_1_g', 
+                'Freq1_harmonics_amplitude_2_g', 'Freq1_harmonics_amplitude_3_g','Freq2_harmonics_amplitude_0_g', 
+                'Freq2_harmonics_amplitude_1_g', 'Freq2_harmonics_amplitude_2_g', 'Freq2_harmonics_amplitude_3_g',
+                'Freq3_harmonics_amplitude_0_g', 'Freq3_harmonics_amplitude_1_g', 'Freq3_harmonics_amplitude_2_g', 
+                'Freq3_harmonics_amplitude_3_g','LinearTrend_g', 'MaxSlope_g','PeriodLS_g', 'Period_fit_g','SlottedA_length_g',
+                'FalseAlarm_prob_g']
+
+        skewed_r = ['CAR_mean_r','CAR_sigma_r','Eta_e_r','Freq1_harmonics_amplitude_0_r', 'Freq1_harmonics_amplitude_1_r',
+                    'Freq1_harmonics_amplitude_2_r', 'Freq1_harmonics_amplitude_3_r','Freq2_harmonics_amplitude_0_r',
+                    'Freq2_harmonics_amplitude_1_r', 'Freq2_harmonics_amplitude_2_r', 'Freq2_harmonics_amplitude_3_r',
+                    'Freq3_harmonics_amplitude_0_r', 'Freq3_harmonics_amplitude_1_r', 'Freq3_harmonics_amplitude_2_r',
+                    'Freq3_harmonics_amplitude_3_r','LinearTrend_r', 'MaxSlope_r','PeriodLS_r', 'Period_fit_r','SlottedA_length_r',
+                    'FalseAlarm_prob_r']
+        
+        # Append _g and _r to custom_remove for later use
+        custom_remove_g = [x + '_g' for x in custom_remove]
+        custom_remove_r = [x + '_r' for x in custom_remove]
+        custom_remove_gandr = custom_remove_g + custom_remove_r
+
+        if custom_remove is not None:
+            skewed_g = [x for x in skewed_g if x not in custom_remove_gandr]
+            skewed_r = [x for x in skewed_r if x not in custom_remove_gandr]
+
+        if thresholds is None:
+            ots = outlier_thresholds_skewed(feature_df, skewed_g+skewed_r, iqr_threshold=2, upper_limit=None, lower_limit=None)
+            feature_df = apply_thresholds(feature_df, skewed_g+skewed_r, ots)
+        else:
+            ots = thresholds
+            feature_df = apply_thresholds(feature_df, skewed_g+skewed_r, ots)
+    
     # Merge the two datasets
     merged = pd.merge(feature_df, metadata, left_on='oid_ztf', right_on=objcol, how='left')
 
@@ -89,5 +126,5 @@ def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_
         # Drop the Xmatch_obj column
         merged = merged.drop(columns=[objcol])
 
-    return feature_df, metadata, merged
+    return feature_df, metadata, merged, ots
 
