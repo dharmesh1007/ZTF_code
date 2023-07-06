@@ -1,0 +1,13 @@
+,precision,recall,f1-score,support
+AMCVn,0.09,0.21,0.12,14
+dwarf_nova_SU_UMa,0.93,0.52,0.67,189
+dwarf_nova_U_Gem,0.43,0.51,0.47,35
+dwarf_nova_Z_Cam,0.52,0.71,0.6,52
+int_polar,0.2,0.27,0.23,15
+nova,0.25,0.71,0.37,14
+nova_like,0.5,0.53,0.52,43
+nova_like_VY_Scl,0.55,0.61,0.58,36
+polar,0.74,0.74,0.74,34
+accuracy,0.56,0.56,0.56,0
+macro avg,0.47,0.54,0.48,432
+weighted avg,0.68,0.56,0.58,432
