@@ -313,8 +313,29 @@ class FeatureExtractor:
             clr_mean = clr_per_epoch.mean()
             clr_median = clr_per_epoch.median()
             clr_std = clr_per_epoch.std()
-            clr_bright = df_g_inboth['dc_mag'].min() - df_r_inboth['dc_mag'].min()
-            clr_faint = df_g_inboth['dc_mag'].max() - df_r_inboth['dc_mag'].max()
+            # Original method for finding the brightest epoch colour.
+            # clr_bright = df_g_inboth['dc_mag'].min() - df_r_inboth['dc_mag'].min()
+            # find the index of the brightest epoch in the g and r bands
+            idx_bright_g = df_g_inboth['dc_mag'].idxmin()
+            idx_bright_r = df_r_inboth['dc_mag'].idxmin()
+            # Derive the colour using the brightest epoch for the g band
+            clr_bright_g = df_g_inboth.iloc[idx_bright_g]['dc_mag'] - df_r_inboth.iloc[idx_bright_g]['dc_mag']
+            # Derive the colour using the brightest epoch for the r band
+            clr_bright_r = df_g_inboth.iloc[idx_bright_r]['dc_mag'] - df_r_inboth.iloc[idx_bright_r]['dc_mag']
+            # Take the mean of the two colours
+            clr_bright = np.mean([clr_bright_g, clr_bright_r])
+            # Original method for finding the faintest epoch colour
+            # clr_faint = df_g_inboth['dc_mag'].max() - df_r_inboth['dc_mag'].max()
+            # find the index of the faintest epoch in the g and r bands
+            idx_faint_g = df_g_inboth['dc_mag'].idxmax()
+            idx_faint_r = df_r_inboth['dc_mag'].idxmax()
+            # Derive the colour using the faintest epoch for the g band
+            clr_faint_g = df_g_inboth.iloc[idx_faint_g]['dc_mag'] - df_r_inboth.iloc[idx_faint_g]['dc_mag']
+            # Derive the colour using the faintest epoch for the r band
+            clr_faint_r = df_g_inboth.iloc[idx_faint_r]['dc_mag'] - df_r_inboth.iloc[idx_faint_r]['dc_mag']
+            # Take the mean of the two colours
+            clr_faint = np.mean([clr_faint_g, clr_faint_r])
+            
 
             # print(f'CLR mean: {clr_mean}\nCLR median: {clr_median}\nCLR std: {clr_std}')
         
@@ -401,16 +422,16 @@ class FeatureExtractor:
         dfr = dfr[~dfr[magCol].isnull()]
 
         # Not necessary if using lasair_clean function.
-        # dfg = dfg.drop_duplicates(subset=timeCol, keep='first', inplace=False, ignore_index=True)
-        # dfr = dfr.drop_duplicates(subset=timeCol, keep='first', inplace=False, ignore_index=True)
+        dfg_al = dfg.drop_duplicates(subset=timeCol, keep='first', inplace=False, ignore_index=True)
+        dfr_al = dfr.drop_duplicates(subset=timeCol, keep='first', inplace=False, ignore_index=True)
 
         # Data for align function
-        timeInt = dfg[timeCol].values.astype('int')
-        time2Int = dfr[timeCol].values.astype('int')
-        magnitude = dfg[magCol].values
-        magnitude2 = dfr[magCol].values
-        error = dfg[errCol].values
-        error2 = dfr[errCol].values
+        timeInt = dfg_al[timeCol].values.astype('int')
+        time2Int = dfr_al[timeCol].values.astype('int')
+        magnitude = dfg_al[magCol].values
+        magnitude2 = dfr_al[magCol].values
+        error = dfg_al[errCol].values
+        error2 = dfr_al[errCol].values
 
         # We synchronize the data for multiband features.
         atime, amag, amag2, aerror, aerror2 = self.align(timeInt, time2Int, magnitude, magnitude2, error, error2)

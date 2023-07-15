@@ -211,7 +211,7 @@ def convert_to_appmag(dataframe):
 
 
 # Further cuts for refinement.
-def lasair_clean(dataframe, limit=None, dropnull=True, dropdup=True, prob=None, zscore_max=None, magerrlim=None):
+def lasair_clean(dataframe, limit=None, dropnull=True, dropdup=False, prob=None, zscore_max=None, magerrlim=None):
 
     df = dataframe.copy()
 
