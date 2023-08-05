@@ -1,6 +1,8 @@
 cacheLasairXmatch/
+figures/
 lightcurves_alerts/
 lightcurves_dataset/
+results/
 .DS_Store
 __pycache__/
 *.pyc

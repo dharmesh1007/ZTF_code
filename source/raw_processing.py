@@ -17,14 +17,29 @@ def label_schemes(df):
     # Apply label schemes.
 
     # Label scheme 1
+    # cvs_df.loc[(cvs_df.manual_label.isin(['SU_Uma','SU_UMa'])), 'labels_1'] = 'dwarf_nova_SU_UMa'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['WZ_Sge'])), 'labels_1'] = 'dwarf_nova_WZ_Sge'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['ER_UMa'])), 'labels_1'] = 'dwarf_nova_ER_UMa'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['U_Gem'])), 'labels_1'] = 'dwarf_nova_U_Gem'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['Z_Cam'])), 'labels_1'] = 'dwarf_nova_Z_Cam'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['nova'])), 'labels_1'] = 'nova'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['nova_decline'])), 'labels_1'] = 'nova_decline'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['nova_remnant'])), 'labels_1'] = 'nova_remnant'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['nova_like'])), 'labels_1'] = 'nova_like'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['VY Scl','VY_Scl'])), 'labels_1'] = 'nova_like_VY_Scl'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['AMCVn'])), 'labels_1'] = 'AMCVn'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['DQ_Her','DQ_Her+U_Gem'])), 'labels_1'] = 'int_polar'
+    # cvs_df.loc[(cvs_df.manual_label.isin(['AM_Her'])), 'labels_1'] = 'polar'
+
+     # Label scheme 1
     cvs_df.loc[(cvs_df.manual_label.isin(['SU_Uma','SU_UMa'])), 'labels_1'] = 'dwarf_nova_SU_UMa'
     cvs_df.loc[(cvs_df.manual_label.isin(['WZ_Sge'])), 'labels_1'] = 'dwarf_nova_WZ_Sge'
-    cvs_df.loc[(cvs_df.manual_label.isin(['ER_UMa'])), 'labels_1'] = 'dwarf_nova_ER_UMa'
+    cvs_df.loc[(cvs_df.manual_label.isin(['ER_UMa'])), 'labels_1'] = 'dwarf_nova_SU_UMa'
     cvs_df.loc[(cvs_df.manual_label.isin(['U_Gem'])), 'labels_1'] = 'dwarf_nova_U_Gem'
     cvs_df.loc[(cvs_df.manual_label.isin(['Z_Cam'])), 'labels_1'] = 'dwarf_nova_Z_Cam'
     cvs_df.loc[(cvs_df.manual_label.isin(['nova'])), 'labels_1'] = 'nova'
-    cvs_df.loc[(cvs_df.manual_label.isin(['nova_decline'])), 'labels_1'] = 'nova_decline'
-    cvs_df.loc[(cvs_df.manual_label.isin(['nova_remnant'])), 'labels_1'] = 'nova_remnant'
+    cvs_df.loc[(cvs_df.manual_label.isin(['nova_decline'])), 'labels_1'] = 'nova'
+    cvs_df.loc[(cvs_df.manual_label.isin(['nova_remnant'])), 'labels_1'] = 'nova_like'
     cvs_df.loc[(cvs_df.manual_label.isin(['nova_like'])), 'labels_1'] = 'nova_like'
     cvs_df.loc[(cvs_df.manual_label.isin(['VY Scl','VY_Scl'])), 'labels_1'] = 'nova_like_VY_Scl'
     cvs_df.loc[(cvs_df.manual_label.isin(['AMCVn'])), 'labels_1'] = 'AMCVn'

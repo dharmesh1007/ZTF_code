@@ -148,3 +148,19 @@ class FilterMethods:
             n_cols = new_df.shape[1]
             print(f"Num columns after removal: {n_cols}; removed: {remove['feature'][-1]}; VIF: {maxvif}")
         return remove
+
+
+# # Define the column transformer from feature reduction using VIF. This can be used within a pipeline.
+from sklearn.base import BaseEstimator, TransformerMixin
+import pandas as pd
+class vif_reduction(BaseEstimator, TransformerMixin):
+    
+    def __init__(self, threshold=2):
+        self.threshold = threshold
+        self.vif_df = pd.read_csv('../processed_data/vif_df.csv')
+        
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, X):
+        return X.drop(self.vif_df[self.vif_df['vif']>self.threshold]['feature'].tolist(), axis=1, inplace=False)

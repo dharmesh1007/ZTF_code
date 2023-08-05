@@ -114,3 +114,30 @@ def plot_feature_importance(importance,names,model_type, path, top_n=20):
     plt.xlabel('FEATURE IMPORTANCE')
     plt.ylabel('FEATURE NAMES')
     plt.savefig(path, format='pdf', bbox_inches='tight')
+
+
+def plot_learning_curves(history, metric, figsize=(10, 6)):
+    history_dict = history.history
+    loss_values = history_dict["loss"]
+    val_loss_values = history_dict["val_loss"]
+    epochs = range(1, len(loss_values) + 1)
+    plt.figure(figsize=figsize)
+    plt.plot(epochs, loss_values, "b", label="Training loss")
+    plt.plot(epochs, val_loss_values, "r", label="Validation loss")
+    plt.title("Training and validation loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.legend()
+    plt.show()
+
+    plt.clf()
+    acc = history_dict[metric]
+    val_acc = history_dict[f"val_{metric}"]
+    plt.figure(figsize=figsize)
+    plt.plot(epochs, acc, "b", label="Training acc")
+    plt.plot(epochs, val_acc, "r", label="Validation acc")
+    plt.title("Training and validation accuracy")
+    plt.xlabel("Epochs")
+    plt.ylabel("Accuracy")
+    plt.legend()
+    plt.show()

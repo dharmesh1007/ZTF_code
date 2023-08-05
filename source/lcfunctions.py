@@ -211,7 +211,7 @@ def convert_to_appmag(dataframe):
 
 
 # Further cuts for refinement.
-def lasair_clean(dataframe, limit=None, dropnull=True, dropdup=False, prob=None, zscore_max=None, magerrlim=None):
+def lasair_clean(dataframe, limit=None, dropnull=True, dropdup=True, prob=None, zscore_max=None, magerrlim=None):
 
     df = dataframe.copy()
 
@@ -221,17 +221,21 @@ def lasair_clean(dataframe, limit=None, dropnull=True, dropdup=False, prob=None,
     # Remove rows with null magnitude values.
     if dropnull:
         df = df[~df['dc_mag'].isnull()]
+    
+    # print(df.shape)
 
     # Split data by filter.
     dfg = df[df['fid']==1]
     dfr = df[df['fid']==2]
 
-    if dropdup:
+    if dropdup==True:
         # Drop duplicates for Julien date.
+        # print(dfg.shape, dfr.shape)
         dfg = dfg.drop_duplicates(subset='jd', keep='first', inplace=False, ignore_index=True)
         dfr = dfr.drop_duplicates(subset='jd', keep='first', inplace=False, ignore_index=True)
-
+        # print(dfg.shape, dfr.shape)
         df = pd.concat([dfg, dfr], axis=0).sort_values(by='jd', ascending=True).reset_index(drop=True)
+        # print(df.shape)
 
     # calculate mean and std of sigma_corr_ext column.
     df_mean = df['dc_sigmag'].mean()
