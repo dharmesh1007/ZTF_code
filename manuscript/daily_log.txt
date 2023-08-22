@@ -67,6 +67,53 @@ Need to focus on magnetic CVs and novae now.
 - set up function  
 
 
+17th August 2023:
+
+- Attempted using a multihead CNN with linearly interpolated magnitudes, a head for each band since the times are not aligned. Also added colour that is also linearly interpolated. I did not backfill these and just interpolated and divided by 1000 points.
+
+- Now attempting to use histograms of the magnitudes, magnitude derivatives using only the peaks and troughs, and the same with all data points.
+
+- Experiment 1: magnitude changes dm, with all data points.
+
+ - ks=5, l2=0.015, g_dmhist_100_10_ks5, Confusion between the SU Uma and AM CVn classes is rather large, it depends upon the weights initialisation.
+ - ks=10 produces slightly better results for the SU Uma class.
+ - ks=15 unsure whether this adds any more value
+ - ks=20 again a little unsure, although the accuracy may be a little higher
+
+- Experiment 2: magnitude changes dm, with just peaks and troughs
+
+ - ks=5, Crappy score and noisy learning
+ - ks=10 Seems a little better, especially with Z Cam (compared to when using all the data points)
+ - ks=15
+ - ks=20 Seems to do better with a larger kernel size
+
+- Experiment 3: dmdt with all data points,
+
+ - ks=5  Does well with SU Uma though still dependent on the initialisation
+ - ks=10 Not sure it makes a huge difference but it is identifying some patterns.
+ - ks=15 The performance improves slightly as we increase the kernel size.
+ - ks=20 As we increase the size of the kernels the classification of the non - DNe suffer.
+ - ks=100 As we increase the kernel size to the maximum the performance of the model tends towards favouring the correct classification of SU Uma to the detriment of other classes.
+
+- Experiment 4: dmdt with just peaks and troughs
+
+ - ks=5  SU UMa classification spread out; others also spread out a little but not too much
+ - ks=10 
+ - ks=15 SU Uma classification improves with increasing the kernel size
+ - ks=20 Volatile validation accuracy during training.
+ - ks=25 Similar to above
+
+- Experiments show to varying the kernel size has an affect on the classes of data that are correctly classified.
+- I am feeling like a complete piece of shit right now.
+- This day sucks so badly, I am just struggling with this crap.
+- I know I need to suffer a little today 
+
+
+ 
+
+
+
+
 
 
 
