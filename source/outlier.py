@@ -40,47 +40,38 @@ def apply_thresholds(dataframe, cols, thresholds):
         df[col] = np.where(df[col]<lower_limit, lower_limit, df[col])
     return df
 
-# Create an outlier function that sets negative values to 0
-def set_negativestozero(df, cols):
-    for col in cols:
-        df[col] = df[col].apply(lambda x: 0 if x < 0 else x)
+# Function to replace outliers with upper and lower limits.
+# The bounds parameter is a dictionary, where the keys are the column names and the values are lists of the upper and lower bounds.
+def outlier_bounds(dataframe, bounds):
+    df = dataframe.copy()
+    for col in bounds.keys():
+        # Upper and lower bounds
+        lower_limit = bounds[col][0]
+        upper_limit = bounds[col][1]
+        # Ammend value if above the upper limit.
+        # np.where parameters are (condition, value if true, value if false)
+        df[col] = np.where(df[col]>upper_limit, upper_limit, df[col])
+        # Ammend value if below the lower limit
+        df[col] = np.where(df[col]<lower_limit, lower_limit, df[col])
     return df
 
-# Create an outlier function that sets upper and lower bounds. The input is the original dataframe and a dictionary with the
-# column names as keys and the upper and lower bounds as values.
-def set_bounds(df, bounds):
-    for col, bound in bounds.items():
-        df[col] = df[col].apply(lambda x: bound[0] if x < bound[0] else x)
-        df[col] = df[col].apply(lambda x: bound[1] if x > bound[1] else x)
+# Function to apply the iqr method to replace outliers with upper and lower limits.
+def outlier_iqr(dataframe, cols, iqr_threshold=1.5):
+    df = dataframe.copy()
+    for col in cols:
+        # Upper and lower bounds
+        ul = df[col].quantile(0.75) + iqr_threshold*(df[col].quantile(0.75)-df[col].quantile(0.25))
+        ll = df[col].quantile(0.25) - iqr_threshold*(df[col].quantile(0.75)-df[col].quantile(0.25))
+        # Ammend value if above the upper limit.
+        # np.where parameters are (condition, value if true, value if false)
+        df[col] = np.where(df[col]>ul, ul, df[col])
+        # Ammend value if below the lower limit
+        df[col] = np.where(df[col]<ll, ll, df[col])
     return df
 
-# Function for setting upper and lower bounds based on z-scores.
-def bounds_zscore(df, cols, zscore=3):
+# Apply log transformation to skewed data
+def log_transform(dataframe, cols):
+    df = dataframe.copy()
     for col in cols:
-        col_mean = df[col].mean()
-        col_std = df[col].std()
-        df[col] = df[col].apply(lambda x: col_mean - zscore*col_std if x < col_mean - zscore*col_std else x)
-        df[col] = df[col].apply(lambda x: col_mean + zscore*col_std if x > col_mean + zscore*col_std else x)
-    return df
-
-# Function for setting upper and lower bounds based on IQR.
-def bounds_iqr(df, cols, k=1.5):
-    for col in cols:
-        col_q1 = df[col].quantile(0.25)
-        col_q3 = df[col].quantile(0.75)
-        col_iqr = col_q3 - col_q1
-        df[col] = df[col].apply(lambda x: col_q1 - k*col_iqr if x < col_q1 - k*col_iqr else x)
-        df[col] = df[col].apply(lambda x: col_q3 + k*col_iqr if x > col_q3 + k*col_iqr else x)
-    return df
-
-# Function to apply log transformation to a column. Add a small value to avoid taking the log of 0.
-def log_transform(df, cols, const=1):
-    for col in cols:
-        df[col] = df[col].apply(lambda x: np.log(x+const))
-    return df
-
-# Function to apply square root transformation to a column.
-def sqrt_transform(df, cols):
-    for col in cols:
-        df[col] = df[col].apply(lambda x: np.sqrt(x))
+        df[col] = np.log1p(df[col])
     return df

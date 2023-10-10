@@ -440,10 +440,8 @@ class FeatureExtractor:
         def extract(df, filter):
             if df.shape[0]==0:
                 # Generate a dataframe with all features and NaN values.
-                df = pd.DataFrame(columns=list(single_feets_features))
-                # Append a row with NaN values, using concat.
-                df_feets_single = pd.concat([df, pd.DataFrame([[np.nan]*df.shape[1]], columns=df.columns)], ignore_index=True)
-                # df_feets_single = df.append(pd.Series(), ignore_index=True)
+                df_feets_single = pd.DataFrame(np.nan, index=[0], columns=list(single_feets_features))
+                # print(df_feets_single)
                 # Add '_g' to the column names.
                 df_feets_single.columns = [col+f'_{filter}' for col in df_feets_single.columns]
 

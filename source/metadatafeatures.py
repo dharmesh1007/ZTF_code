@@ -21,7 +21,7 @@ def getGaiaData(target_df, radius):
     alerts_table = Table([target_df['ra'], target_df['dec']], names=['RA', 'Dec'], meta={'meta':'CVs'})
     
     # Login to archive
-    Gaia.login(user='dmistry', password='X641oVxh8kLj#')
+    Gaia.login(user='dmistry', password='FLpd#1007')
 
     # Delete tables if present
     try:
@@ -91,7 +91,7 @@ def gaia_xmatch(target_df, query, racol, deccol):
     alerts_table = Table([target_df['ra'], target_df['dec']], names=[racol, deccol], meta={'meta':'CVs'})
 
     # Login to archive
-    Gaia.login(user='dmistry', password='X641oVxh8kLj#')
+    Gaia.login(user='dmistry', password='FLpd#1007')
 
     # Delete tables if present
     try:
@@ -263,7 +263,7 @@ def esa_archive(target_df, radius, table='gaiadr3.gaia_source', shortname='gaia_
     alerts_table = Table([target_df['ra'], target_df['dec']], names=['RA', 'Dec'], meta={'meta':'CVs'})
     
     # Login to archive
-    Gaia.login(user='dmistry', password='X641oVxh8kLj#')
+    Gaia.login(user='dmistry', password='FLpd#1007')
 
     # Delete tables if present
     try:

@@ -74,7 +74,11 @@ def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_
         features_single = pd.concat([feets, custom], axis=1)
         # Add features to dataframe
         # feature_df = feature_df.append(features_single, ignore_index=True)
+        # instead of using append we can also use concat
         feature_df = pd.concat([feature_df, features_single], axis=0, ignore_index=True)
+
+    # We would then need to have the index reset
+    feature_df = feature_df.reset_index(drop=True)
     
     # Add oid to dataframe as the first column
     feature_df.insert(0, 'oid_ztf', objlist)
@@ -118,7 +122,6 @@ def build_dataset(df, objcol, folderpath='../lightcurves_dataset/lasair_2023_03_
         else:
             ots = thresholds
             feature_df = apply_thresholds(feature_df, skewed_g+skewed_r, ots)
-        
     else:
         ots = None
     

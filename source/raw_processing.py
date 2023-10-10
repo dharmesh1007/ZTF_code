@@ -34,7 +34,7 @@ def label_schemes(df):
      # Label scheme 1
     cvs_df.loc[(cvs_df.manual_label.isin(['SU_Uma','SU_UMa'])), 'labels_1'] = 'dwarf_nova_SU_UMa'
     cvs_df.loc[(cvs_df.manual_label.isin(['WZ_Sge'])), 'labels_1'] = 'dwarf_nova_WZ_Sge'
-    cvs_df.loc[(cvs_df.manual_label.isin(['ER_UMa'])), 'labels_1'] = 'dwarf_nova_SU_UMa'
+    cvs_df.loc[(cvs_df.manual_label.isin(['ER_UMa'])), 'labels_1'] = 'dwarf_nova_ER_UMa'
     cvs_df.loc[(cvs_df.manual_label.isin(['U_Gem'])), 'labels_1'] = 'dwarf_nova_U_Gem'
     cvs_df.loc[(cvs_df.manual_label.isin(['Z_Cam'])), 'labels_1'] = 'dwarf_nova_Z_Cam'
     cvs_df.loc[(cvs_df.manual_label.isin(['nova'])), 'labels_1'] = 'nova'
