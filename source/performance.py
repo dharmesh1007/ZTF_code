@@ -110,7 +110,7 @@ def plot_feature_importance(importance,names,model_type, path, top_n=20):
     #Plot Searborn bar chart
     sns.barplot(x=fi_df['feature_importance'], y=fi_df['feature_names'])
     #Add chart labels
-    plt.title(model_type + ' FEATURE IMPORTANCE')
+    # plt.title(model_type + ' FEATURE IMPORTANCE')
     plt.xlabel('FEATURE IMPORTANCE')
     plt.ylabel('FEATURE NAMES')
     plt.savefig(path, format='pdf', bbox_inches='tight')
