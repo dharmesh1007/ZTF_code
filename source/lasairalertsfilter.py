@@ -274,3 +274,32 @@ def sn_filtering(alerts_df):
     print(f'Number of alerts after SN cuts: {len(alerts_df_sncut)}')
 
     return alerts_df_sncut
+
+# Crossmatch alerts with AAVSO CVs
+def xmatchcvs(alerts_df, aavsocvs):
+    # Create astropy skycoord objects for each catalogue
+    alerts_coords = SkyCoord(ra=alerts_df['ra'].values*u.degree, dec=alerts_df['dec'].values*u.degree)
+    cv_coords = SkyCoord(ra=aavsocvs['ra'].values*u.degree, dec=aavsocvs['dec'].values*u.degree)
+    # Perform coordinate match
+    idx_aavso, d2d_preds, d3d_preds = match_coordinates_sky(alerts_coords, cv_coords)
+    # Create a pandas dataframe with the results
+    matches = pd.DataFrame({'idx_aavso':idx_aavso, 'd2d':d2d_preds.arcsecond})
+    # Create a new dataframe with the matches
+    alerts_aavso = pd.concat([alerts_df, matches], axis=1)
+    alerts_aavso = alerts_aavso.merge(aavsocvs, left_on='idx_aavso', right_index=True, how='left')
+    # If d2d is greater than 2 arcseconds, then there is no match, so set certain columns to NaN
+    alerts_aavso.loc[alerts_aavso['d2d']>2, ['Name', 'Const', 'Type', 'Period']] = ''
+    # Drop columns
+    alerts_aavso = alerts_aavso.drop(columns=['idx_aavso', 'd2d', 'AUID', 'Coords', 'Mag', 'ra_y', 'dec_y', 'Const', 'Period'])
+    # Rename columns
+    alerts_aavso = alerts_aavso.rename(columns={'ra_x':'ra', 'dec_x':'dec', 'Name':'aavso_name', 'Type':'aavso_type'})
+
+    return alerts_aavso
+
+# Process the coordinates of the aavso data such that they are in decimal degrees and useable
+def coords_process(filepath, savepath):
+    aavso_df = pd.read_csv(filepath, keep_default_na=False)
+    aavso_df['ra'] = aavso_df.apply(lambda x: SkyCoord(f'{x["Coords"]}', unit=(u.hourangle, u.deg), equinox='J2000').ra.deg, axis=1)
+    aavso_df['dec'] = aavso_df.apply(lambda x: SkyCoord(f'{x["Coords"]}', unit=(u.hourangle, u.deg), equinox='J2000').dec.deg, axis=1)
+    aavso_df.to_csv(savepath, index=False)
+    return aavso_df
