@@ -79,8 +79,8 @@ def log_transform(dataframe, cols):
 def iqr_method(column, factor=1.5):
     # Your custom preprocessing logic here
     # For example, clip values based on IQR method
-    q1 = np.percentile(column, 25)
-    q3 = np.percentile(column, 75)
+    q1 = np.nanpercentile(column, 25)
+    q3 = np.nanpercentile(column, 75)
     iqr = q3 - q1
     lower_bound = q1 - (factor * iqr)
     upper_bound = q3 + (factor * iqr)
