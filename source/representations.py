@@ -277,3 +277,22 @@ def multi_channel(array_list):
     new_arrray = np.concatenate(reshaped_arrays, axis=2)
     return new_arrray
 
+
+def region_view(x_bins, y_bins, df, x_col, y_col, x_inc, y_inc):
+    """
+    Function to return a list of indices for each region in a grid
+    x_bins: list of x bin limits. e.g. [0,1,2,3], can use np.linspace
+    y_bins: list of y bin limits. e.g. [0,1,2,3], can use np.linspace
+    df: dataframe containing the projection data
+    x_col: name of the column containing the x data
+    y_col: name of the column containing the y data
+    """
+    index_list = []
+    for limit2 in y_bins:
+        for limit in x_bins:
+            # print(limit, limit+1, limit2, limit2+1)
+            index_list.append(df[(df[x_col]>limit) &
+                                                    (df[x_col]<limit+x_inc) &
+                                                    (df[y_col]>limit2) &
+                                                    (df[y_col]<limit2+y_inc)].index.tolist())
+    return index_list
